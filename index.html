@@ -525,7 +525,7 @@ function App(){
                       id=id.trim();
                       var e={};
                       var ent=cols[colIdx['Entscheidung']]||'';ent=ent.trim().toLowerCase();
-                      if(ent)e.decision=ent==='angenommen'?'accepted':(ent==='vorbehalt'||ent==='in_arbeit')?'conditional':ent==='abgelehnt'?'rejected':'';
+                      if(ent){var dm={'angenommen':'accepted','accepted':'accepted','vorbehalt':'conditional','in_arbeit':'conditional','in arbeit':'conditional','conditional':'conditional','in progress':'conditional','abgelehnt':'rejected','rejected':'rejected'};e.decision=dm[ent]||''}
                       var fields=[['Annahme','assumption'],['Umsetzung','implementation'],['Kommentar','comment'],['Alternative','alternative'],['Hinweis','hint']];
                       fields.forEach(function(f2){var ci=colIdx[f2[0]];if(ci!==undefined&&cols[ci]&&cols[ci].trim())e[f2[1]]=cols[ci].trim()});
                       var pn=cols[colIdx['Prio (neu)']]||'';if(pn.trim())e.prio=pn.trim();
@@ -561,7 +561,7 @@ function App(){
                       id=id.trim();
                       var e={};
                       var ent=cols[colIdx['Entscheidung']]||'';ent=ent.trim().toLowerCase();
-                      if(ent)e.decision=ent==='angenommen'?'accepted':(ent==='vorbehalt'||ent==='in_arbeit')?'conditional':ent==='abgelehnt'?'rejected':'';
+                      if(ent){var dm={'angenommen':'accepted','accepted':'accepted','vorbehalt':'conditional','in_arbeit':'conditional','in arbeit':'conditional','conditional':'conditional','in progress':'conditional','abgelehnt':'rejected','rejected':'rejected'};e.decision=dm[ent]||''}
                       var fields=[['Annahme','assumption'],['Umsetzung','implementation'],['Kommentar','comment'],['Alternative','alternative'],['Hinweis','hint']];
                       fields.forEach(function(f2){var ci=colIdx[f2[0]];if(ci!==undefined&&cols[ci]&&cols[ci].trim())e[f2[1]]=cols[ci].trim()});
                       var pn=cols[colIdx['Prio (neu)']]||'';if(pn.trim())e.prio=pn.trim();
