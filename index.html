@@ -88,7 +88,8 @@ function App(){
   var _x=us(null);var expandedId=_x[0];var setExpandedId=_x[1];
   var _lang=us('de');var lang=_lang[0];var setLang=_lang[1];
   var t=function(key){return(I18N[lang]||I18N.de)[key]||(I18N.de)[key]||key};
-  var tr=function(item,field){if(lang==='en'&&EN_TEXTS[item.id]&&EN_TEXTS[item.id][field])return EN_TEXTS[item.id][field];return item[field]};
+  var _fmap={r:'requirement',cr:'criterion',g4:'gen4'};
+  var tr=function(item,field){if(lang==='en'&&EN_TEXTS[item.id]&&EN_TEXTS[item.id][field])return EN_TEXTS[item.id][field];return item[_fmap[field]||field]};
   var trCh=function(ch){if(lang==='en')return CH_DE2EN[ch]||ch;return ch};
   var trChRev=function(ch){if(lang==='en')return CH_EN2DE[ch]||ch;return ch};
   var _ss=us('');var saveStatus=_ss[0];var setSaveStatus=_ss[1];
