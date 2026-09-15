@@ -1,0 +1,7 @@
+name = "neura-api"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "940e73e95bdc4fd78eeda99489a728fb"
