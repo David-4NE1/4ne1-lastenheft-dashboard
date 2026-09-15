@@ -752,7 +752,7 @@ function App(){
                 ):null
               ),
               (item.hint||e.hint)&&!item.gen4&&!e.zdfOk?h('textarea',{value:e.hint!==undefined?e.hint:(item.hint||''),onChange:function(ev){upd(item.id,'hint',ev.target.value)},rows:4,style:{width:'100%',fontSize:16,color:'#92400e',border:'2px solid #fcd34d',borderRadius:6,padding:'10px 14px',marginBottom:8,resize:'vertical',background:'#fefce8',lineHeight:1.4}}):null,h('div',{style:{display:'flex',flexDirection:'column',gap:6}},
-                ['assumption','implementation','comment'].concat(e.decision==='rejected'?['alternative']:[]).map(function(field){
+                ['assumption','implementation','comment'].concat(e.decision==='rejected'||e.decision==='conditional'?['alternative']:[]).map(function(field){
                   var labels={assumption:t('assumption'),implementation:t('implementation'),comment:t('comment'),alternative:t('alternative')};
                   var phs={assumption:t('phAssumption'),implementation:t('phImplementation'),comment:t('phComment'),alternative:t('phAlternative')};
                   var filled=!!e[field];
