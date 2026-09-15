@@ -12,12 +12,17 @@ export default {
 
     const url = new URL(request.url);
     const KEY = 'dashboard-data';
+    const BACKUP_INTERVAL = 3600;
 
     async function autoBackup() {
+      const lastKey = await env.KV.get('backup-latest-ts');
+      const now = Date.now();
+      if (lastKey && (now - parseInt(lastKey)) < BACKUP_INTERVAL * 1000) return;
       const current = await env.KV.get(KEY, 'text');
       if (current && current !== '{}') {
         const ts = new Date().toISOString().replace(/[:.]/g, '-');
-        await env.KV.put('backup-' + ts, current, { expirationTtl: 604800 });
+        await env.KV.put('backup-' + ts, current, { expirationTtl: 2592000 });
+        await env.KV.put('backup-latest-ts', String(now));
       }
     }
 
@@ -64,29 +69,33 @@ export default {
     }
 
     if (url.pathname === '/backups') {
-      if (request.method === 'GET') {
-        const list = await env.KV.list({ prefix: 'backup-', limit: 50 });
-        const backups = list.keys.map(k => ({ key: k.name, ts: k.name.replace('backup-', '').replace(/-/g, function(m, i) { return i === 4 || i === 7 ? '-' : i === 13 || i === 16 ? ':' : i === 19 ? '.' : m; }) }));
-        backups.sort(function(a, b) { return b.key.localeCompare(a.key); });
-        return new Response(JSON.stringify(backups), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
+      const list = await env.KV.list({ prefix: 'backup-', limit: 100 });
+      const backups = list.keys
+        .filter(function(k) { return k.name !== 'backup-latest-ts'; })
+        .map(function(k) { return { key: k.name }; });
+      backups.sort(function(a, b) { return b.key.localeCompare(a.key); });
+      return new Response(JSON.stringify(backups), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     if (url.pathname.startsWith('/backup/')) {
-      const backupKey = url.pathname.replace('/backup/', '');
+      const backupKey = decodeURIComponent(url.pathname.slice(8));
       if (request.method === 'GET') {
         const data = await env.KV.get(backupKey, 'json');
-        if (!data) return new Response('Not found', { status: 404, headers: corsHeaders });
+        if (!data) return new Response(JSON.stringify({ error: 'not found' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         return new Response(JSON.stringify(data), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
       if (request.method === 'POST') {
-        await autoBackup();
+        const current = await env.KV.get(KEY, 'text');
+        if (current && current !== '{}') {
+          const ts = new Date().toISOString().replace(/[:.]/g, '-');
+          await env.KV.put('backup-' + ts, current, { expirationTtl: 2592000 });
+        }
         const data = await env.KV.get(backupKey, 'text');
-        if (!data) return new Response('Not found', { status: 404, headers: corsHeaders });
+        if (!data) return new Response(JSON.stringify({ error: 'not found' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         await env.KV.put(KEY, data);
         return new Response(JSON.stringify({ ok: true, restored: backupKey }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -94,6 +103,6 @@ export default {
       }
     }
 
-    return new Response('Not found', { status: 404, headers: corsHeaders });
+    return new Response(JSON.stringify({ error: 'not found' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   },
 };
