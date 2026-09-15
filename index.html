@@ -114,11 +114,27 @@ function App(){
   var _saveTimer=uref(null);
   var _dirtyFields=uref({});
   var _pendingDelta=uref({});
+  var _lastBackupTs=uref(0);
+  var BACKUP_PREFIX='neura-backup-';
+  var BACKUP_INTERVAL=600000;
+  var MAX_BACKUPS=20;
+  var autoLocalBackup=function(fullState){
+    var now=Date.now();
+    if(now-_lastBackupTs.current<BACKUP_INTERVAL)return;
+    try{
+      var ts=new Date().toISOString().replace(/[:.]/g,'-').substring(0,19);
+      localStorage.setItem(BACKUP_PREFIX+ts,JSON.stringify(fullState));
+      _lastBackupTs.current=now;
+      var keys=[];for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.startsWith(BACKUP_PREFIX))keys.push(k)}
+      keys.sort();while(keys.length>MAX_BACKUPS){localStorage.removeItem(keys.shift())}
+    }catch(e){}
+  };
   var save=uc(function(fullState){
     if(_saveTimer.current)clearTimeout(_saveTimer.current);
     setSaveStatus('saving');
     _saveTimer.current=setTimeout(function(){
       try{localStorage.setItem(SK,JSON.stringify(fullState))}catch(e){}
+      autoLocalBackup(fullState);
       var delta=_pendingDelta.current;
       if(Object.keys(delta).length>0){
         fetch('https://neura-api.david-rybinski.workers.dev/data',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(delta)}).then(function(resp){if(!resp.ok)throw new Error(resp.status);_dirtyFields.current={};_pendingDelta.current={};setSaveStatus('saved');if(_ssTimer.current)clearTimeout(_ssTimer.current);_ssTimer.current=setTimeout(function(){setSaveStatus('')},3000)}).catch(function(){setSaveStatus('local');if(_ssTimer.current)clearTimeout(_ssTimer.current);_ssTimer.current=setTimeout(function(){setSaveStatus('')},5000)});
@@ -592,7 +608,8 @@ function App(){
           h('button',{onClick:function(){if(confirm('ALLES Reset? Alle Eingaben werden geloescht!')){setEdits({});localStorage.removeItem(SK);fetch('https://neura-api.david-rybinski.workers.dev/data',{method:'DELETE'}).catch(function(){})}},style:{background:'#334155',color:'#94a3b8',border:'none',borderRadius:6,padding:'6px 10px',cursor:'pointer',fontSize:11}},'Reset'),
           h('button',{onClick:function(){setLang(lang==='de'?'en':'de')},style:{background:lang==='en'?'#2563eb':'#334155',color:'white',border:'none',borderRadius:6,padding:'6px 12px',cursor:'pointer',fontSize:11,fontWeight:700}},lang==='de'?'EN':'DE'),
           h('button',{onClick:function(){
-            fetch('https://neura-api.david-rybinski.workers.dev/backups').then(function(r){return r.json()}).then(function(list){setBackups(list)}).catch(function(){alert('Backups konnten nicht geladen werden')});
+            try{var keys=[];for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.startsWith(BACKUP_PREFIX))keys.push(k)}
+            keys.sort().reverse();setBackups(keys.map(function(k){return{key:k}}))}catch(e){alert('Backups nicht verfuegbar')}
           },style:{background:'#334155',color:'#94a3b8',border:'none',borderRadius:6,padding:'6px 10px',cursor:'pointer',fontSize:11}},'Backups'),
           h('button',{onClick:function(){
             try{
@@ -609,32 +626,37 @@ function App(){
     backups?h('div',{style:{position:'fixed',top:0,left:0,right:0,bottom:0,background:'rgba(0,0,0,0.5)',zIndex:9999,display:'flex',alignItems:'center',justifyContent:'center'},onClick:function(){setBackups(null)}},
       h('div',{onClick:function(ev){ev.stopPropagation()},style:{background:'white',borderRadius:12,padding:24,maxWidth:500,width:'90%',maxHeight:'80vh',overflow:'auto'}},
         h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}},
-          h('h3',{style:{margin:0,fontSize:18}},'Server Backups (letzte 7 Tage)'),
+          h('h3',{style:{margin:0,fontSize:18}},'Lokale Backups'),
           h('button',{onClick:function(){setBackups(null)},style:{background:'none',border:'none',fontSize:20,cursor:'pointer'}},'✕')
         ),
-        backups.length===0?h('p',{style:{color:'#64748b'}},'Keine Backups vorhanden. Backups werden ab jetzt bei jeder Aenderung automatisch erstellt.'):null,
+        h('p',{style:{color:'#64748b',fontSize:12,margin:'0 0 12px'}},'Automatisch alle 10 Min. gespeichert (max. 20, in deinem Browser).'),
+        backups.length===0?h('p',{style:{color:'#64748b'}},'Keine Backups vorhanden. Backups werden automatisch beim Bearbeiten erstellt.'):null,
         backups.map(function(b){
-          var dt=b.key.replace('backup-','').substring(0,19).replace('T',' ');
+          var dt=b.key.replace(BACKUP_PREFIX,'').replace(/T/,' ').replace(/-/g,function(m,i){return i>9?':':'-'});
           return h('div',{key:b.key,style:{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 12px',borderBottom:'1px solid #e2e8f0'}},
             h('span',{style:{fontSize:13,fontFamily:'monospace'}},dt),
             h('div',{style:{display:'flex',gap:6}},
               h('button',{onClick:function(){
-                fetch('https://neura-api.david-rybinski.workers.dev/backup/'+b.key).then(function(r){return r.json()}).then(function(data){
-                  var count=Object.keys(data).length;
-                  var filled=0;Object.keys(data).forEach(function(id){Object.keys(data[id]).forEach(function(f){if(data[id][f])filled++})});
-                  alert('Backup '+dt+':\n'+count+' Items, '+filled+' Felder gefuellt');
-                });
+                try{var data=JSON.parse(localStorage.getItem(b.key)||'{}');
+                var count=Object.keys(data).length;
+                var filled=0;Object.keys(data).forEach(function(id){Object.keys(data[id]).forEach(function(f){if(data[id][f])filled++})});
+                alert('Backup '+dt+':\n'+count+' Items, '+filled+' Felder gefuellt')}catch(e){alert('Fehler beim Lesen')}
               },style:{background:'#eff6ff',color:'#2563eb',border:'1px solid #93c5fd',borderRadius:4,padding:'4px 8px',cursor:'pointer',fontSize:11}},'Info'),
               h('button',{onClick:function(){
-                if(confirm('Backup vom '+dt+' wiederherstellen?\n\nAchtung: Der aktuelle Stand wird vorher automatisch gesichert.')){
-                  fetch('https://neura-api.david-rybinski.workers.dev/backup/'+b.key,{method:'POST'}).then(function(r){return r.json()}).then(function(){
-                    fetch('https://neura-api.david-rybinski.workers.dev/data').then(function(r){return r.json()}).then(function(data){
-                      setEdits(data);localStorage.setItem(SK,JSON.stringify(data));setBackups(null);
-                      alert('Wiederhergestellt! Seite wird neu geladen.');location.reload();
-                    });
-                  });
+                if(confirm('Backup vom '+dt+' wiederherstellen?\n\nDer aktuelle Stand wird vorher gesichert.')){
+                  try{
+                    var cur=localStorage.getItem(SK);
+                    if(cur&&cur!=='{}'){var ts=new Date().toISOString().replace(/[:.]/g,'-').substring(0,19);localStorage.setItem(BACKUP_PREFIX+ts,cur)}
+                    var data=JSON.parse(localStorage.getItem(b.key)||'{}');
+                    setEdits(data);localStorage.setItem(SK,JSON.stringify(data));setBackups(null);
+                    fetch('https://neura-api.david-rybinski.workers.dev/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).catch(function(){});
+                    alert('Wiederhergestellt!');
+                  }catch(e){alert('Fehler: '+e.message)}
                 }
-              },style:{background:'#fef2f2',color:'#dc2626',border:'1px solid #fca5a5',borderRadius:4,padding:'4px 8px',cursor:'pointer',fontSize:11,fontWeight:600}},'Restore')
+              },style:{background:'#fef2f2',color:'#dc2626',border:'1px solid #fca5a5',borderRadius:4,padding:'4px 8px',cursor:'pointer',fontSize:11,fontWeight:600}},'Restore'),
+              h('button',{onClick:function(){
+                if(confirm('Backup loeschen?')){localStorage.removeItem(b.key);setBackups(function(prev){return prev.filter(function(x){return x.key!==b.key})})}
+              },style:{background:'white',color:'#94a3b8',border:'1px solid #d1d5db',borderRadius:4,padding:'4px 8px',cursor:'pointer',fontSize:11}},'✕')
             )
           );
         })
