@@ -100,16 +100,20 @@ function App(){
 
   var _saveTimer=uref(null);
   var _dirtyFields=uref({});
-  var save=uc(function(ne){
+  var _pendingDelta=uref({});
+  var save=uc(function(fullState){
     if(_saveTimer.current)clearTimeout(_saveTimer.current);
     _saveTimer.current=setTimeout(function(){
-      var json=JSON.stringify(ne);
-      try{localStorage.setItem(SK,json)}catch(e){}
-      fetch('https://neura-api.david-rybinski.workers.dev/data',{method:'POST',headers:{'Content-Type':'application/json'},body:json}).then(function(){_dirtyFields.current={}}).catch(function(){});
+      try{localStorage.setItem(SK,JSON.stringify(fullState))}catch(e){}
+      var delta=_pendingDelta.current;
+      if(Object.keys(delta).length>0){
+        fetch('https://neura-api.david-rybinski.workers.dev/data',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(delta)}).then(function(){_dirtyFields.current={};_pendingDelta.current={}}).catch(function(){});
+      }
     },3000);
   },[]);
   var upd=uc(function(id,field,value){
     var df=_dirtyFields.current;if(!df[id])df[id]={};df[id][field]=true;
+    var pd=_pendingDelta.current;if(!pd[id])pd[id]={};pd[id][field]=value;
     setEdits(function(prev){var next=Object.assign({},prev);next[id]=Object.assign({},next[id]||{});next[id][field]=value;save(next);return next});
   },[save]);
 
