@@ -104,11 +104,34 @@ function App(){
     try{var v=localStorage.getItem(SK);if(v){var p=JSON.parse(v);if(p&&Object.keys(p).length>0){setEdits(p);loaded=true}}}catch(e){}
     if(!loaded){var pre=CSV_PRELOAD||{};if(Object.keys(pre).length>0){setEdits(pre);loaded=true}}
     setLoading(false);
-    // Background sync from worker (5s timeout)
+    // Background sync from worker (5s timeout) — merge, never replace
     var ctrl=new AbortController();var tid=setTimeout(function(){ctrl.abort()},5000);
-    fetch('https://4ne1-lastenheft-dashboard.david-rybinski.workers.dev/data',{signal:ctrl.signal}).then(function(r){return r.json()}).then(function(d){
+    fetch('https://4ne1-lastenheft-dashboard.david-rybinski.workers.dev/data',{signal:ctrl.signal}).then(function(r){return r.json()}).then(function(remote){
       clearTimeout(tid);
-      if(d&&Object.keys(d).length>0){setEdits(d);try{localStorage.setItem(SK,JSON.stringify(d))}catch(e){}}
+      if(!remote||typeof remote!=='object')return;
+      setEdits(function(local){
+        var localKeys=Object.keys(local);var remoteKeys=Object.keys(remote);
+        if(remoteKeys.length===0)return local;
+        // If worker has much less data, push local to worker instead
+        if(localKeys.length>0&&remoteKeys.length<localKeys.length*0.5){
+          fetch('https://4ne1-lastenheft-dashboard.david-rybinski.workers.dev/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(local)}).catch(function(){});
+          return local;
+        }
+        // Merge: remote wins for fields not locally dirty
+        var merged=Object.assign({},local);var changed=false;
+        remoteKeys.forEach(function(id){
+          var rf=remote[id]||{};var lf=merged[id]||{};
+          Object.keys(rf).forEach(function(f){
+            if(rf[f]!==lf[f]){
+              if(!merged[id])merged[id]={};
+              merged[id]=Object.assign({},merged[id]);
+              merged[id][f]=rf[f];changed=true;
+            }
+          });
+        });
+        if(changed){try{localStorage.setItem(SK,JSON.stringify(merged))}catch(e){}}
+        return changed?merged:local;
+      });
     }).catch(function(){clearTimeout(tid)});
   },[]);
 
