@@ -79,7 +79,7 @@ var PC={A:'#C0392B',B:'#B58900'};
 var SK='neura-4ne1-req-data';
 var CH_DE2EN={"2.1.4 Verkleidung & Struktur":"2.1.4 Cover & Structure","2.1.5 Kinematik & Mechanik":"2.1.5 Kinematics & Mechanics","2.2 Sensorik & Perception":"2.2 Sensors & Perception","2.1.5 Fuss & Lokomotion":"2.1.5 Foot & Locomotion","2.3 Compute Architektur":"2.3 Compute Architecture","2.4 Netzwerk & TSN":"2.4 Network & TSN","2.5 Software & Steuerung":"2.5 Software & Control","2.8 Energie & Thermik":"2.8 Power & Thermal","2.7.3 E-Stop Konzept":"2.7.3 E-Stop Concept","2.12 Lieferant Leili":"2.12 Supplier Leili","6.5 Projekt-Risiken":"6.5 Project Risks","2.7 Safety & Compliance":"2.7 Safety & Compliance","2.1.4 Design Rules":"2.1.4 Design Rules","5. Testing & EOL":"5. Testing & EOL","7. Open Points":"7. Open Points","2.1 System Overview":"2.1 System Overview"};
 var CH_EN2DE={};Object.keys(CH_DE2EN).forEach(function(k){CH_EN2DE[CH_DE2EN[k]]=k});
-var I18N={de:{allChapters:'Alle Kapitel',allPrios:'Alle Prios',all:'Alle',open:'offen',edited:'bearbeitet',zdfMissing:'ZDF fehlen',assumption:'Annahme',implementation:'Umsetzung',comment:'Kommentar',alternative:'⚠ Was können wir stattdessen liefern? (Pflicht bei Ablehnung)',phAssumption:'Was bedeutet dieses Requirement?',phImplementation:'Technologie, Komponente...',phComment:'Risiken, Abhängigkeiten...',phAlternative:'Alternative Lösung...',gen4Target:'GEN4 ZIEL',criterion:'KRITERIUM',decision:'ENTSCHEIDUNG',accept:'Annehmen',conditional:'Vorbehalt',reject:'Ablehnen',prio:'PRIO',category:'KATEGORIE',prev:'Vorheriges',next:'Nächstes',noItems:'Keine Items.',resetConfirm:'ALLES Reset? Alle Eingaben werden geloescht!',zdfResetConfirm:'ZDF & Hinweise zuruecksetzen? (Nur ZDF-Status und Hinweistexte werden zurueckgesetzt, alle anderen Eingaben bleiben erhalten)',zdfResetDone:'ZDF & Hinweise zurueckgesetzt auf Originalwerte',zdfCleared:'ZDF als geklaert markiert',zdfReset:'ZDF-Status zurueckgesetzt',saving:'Speichern...',saved:'Gespeichert',items:'Items'},en:{allChapters:'All Chapters',allPrios:'All Priorities',all:'All',open:'open',edited:'edited',zdfMissing:'ZDF missing',assumption:'Assumption',implementation:'Implementation',comment:'Comment',alternative:'⚠ What can we deliver instead? (Required on rejection)',phAssumption:'What does this requirement mean?',phImplementation:'Technology, component...',phComment:'Risks, dependencies...',phAlternative:'Alternative solution...',gen4Target:'GEN4 TARGET',criterion:'CRITERION',decision:'DECISION',accept:'Accept',conditional:'Conditional',reject:'Reject',prio:'PRIO',category:'CATEGORY',prev:'Previous',next:'Next',noItems:'No items.',resetConfirm:'FULL Reset? All entries will be deleted!',zdfResetConfirm:'Reset ZDF & hints? (Only ZDF status and hint texts will be reset, all other entries remain)',zdfResetDone:'ZDF & hints reset to original values',zdfCleared:'ZDF marked as resolved',zdfReset:'ZDF status reset',saving:'Saving...',saved:'Saved',items:'items'}};
+var I18N={de:{allChapters:'Alle Kapitel',allPrios:'Alle Prios',all:'Alle',open:'offen',edited:'bearbeitet',zdfMissing:'ZDF fehlen',assumption:'Annahme',implementation:'Umsetzung',comment:'Kommentar',alternative:'⚠ Begründung / Alternative (Pflicht bei Ablehnung)',phAssumption:'Was bedeutet dieses Requirement?',phImplementation:'Technologie, Komponente...',phComment:'Risiken, Abhängigkeiten...',phAlternative:'Alternative Lösung...',gen4Target:'GEN4 ZIEL',criterion:'KRITERIUM',decision:'ENTSCHEIDUNG',accept:'Annehmen',conditional:'In Arbeit',reject:'Ablehnen',prio:'PRIO',category:'KATEGORIE',prev:'Vorheriges',next:'Nächstes',noItems:'Keine Items.',resetConfirm:'ALLES Reset? Alle Eingaben werden geloescht!',zdfResetConfirm:'ZDF & Hinweise zuruecksetzen? (Nur ZDF-Status und Hinweistexte werden zurueckgesetzt, alle anderen Eingaben bleiben erhalten)',zdfResetDone:'ZDF & Hinweise zurueckgesetzt auf Originalwerte',zdfCleared:'ZDF als geklaert markiert',zdfReset:'ZDF-Status zurueckgesetzt',saving:'Speichern...',saved:'Gespeichert',items:'Items'},en:{allChapters:'All Chapters',allPrios:'All Priorities',all:'All',open:'open',edited:'edited',zdfMissing:'ZDF missing',assumption:'Assumption',implementation:'Implementation',comment:'Comment',alternative:'⚠ Reason / Alternative (Required on rejection)',phAssumption:'What does this requirement mean?',phImplementation:'Technology, component...',phComment:'Risks, dependencies...',phAlternative:'Alternative solution...',gen4Target:'GEN4 TARGET',criterion:'CRITERION',decision:'DECISION',accept:'Accept',conditional:'In Progress',reject:'Reject',prio:'PRIO',category:'CATEGORY',prev:'Previous',next:'Next',noItems:'No items.',resetConfirm:'FULL Reset? All entries will be deleted!',zdfResetConfirm:'Reset ZDF & hints? (Only ZDF status and hint texts will be reset, all other entries remain)',zdfResetDone:'ZDF & hints reset to original values',zdfCleared:'ZDF marked as resolved',zdfReset:'ZDF status reset',saving:'Saving...',saved:'Saved',items:'items'}};
 
 function App(){
   var _i=us(function(){return RAW.map(EXPAND)});var items=_i[0];
@@ -121,7 +121,7 @@ function App(){
       try{localStorage.setItem(SK,JSON.stringify(fullState))}catch(e){}
       var delta=_pendingDelta.current;
       if(Object.keys(delta).length>0){
-        fetch('https://neura-api.david-rybinski.workers.dev/data',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(delta)}).then(function(){_dirtyFields.current={};_pendingDelta.current={};setSaveStatus('saved');if(_ssTimer.current)clearTimeout(_ssTimer.current);_ssTimer.current=setTimeout(function(){setSaveStatus('')},3000)}).catch(function(){setSaveStatus('error')});
+        fetch('https://neura-api.david-rybinski.workers.dev/data',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(delta)}).then(function(resp){if(!resp.ok)throw new Error(resp.status);_dirtyFields.current={};_pendingDelta.current={};setSaveStatus('saved');if(_ssTimer.current)clearTimeout(_ssTimer.current);_ssTimer.current=setTimeout(function(){setSaveStatus('')},3000)}).catch(function(){setSaveStatus('local');if(_ssTimer.current)clearTimeout(_ssTimer.current);_ssTimer.current=setTimeout(function(){setSaveStatus('')},5000)});
       }else{setSaveStatus('saved');if(_ssTimer.current)clearTimeout(_ssTimer.current);_ssTimer.current=setTimeout(function(){setSaveStatus('')},3000)}
     },3000);
   },[]);
@@ -181,8 +181,9 @@ function App(){
     var total=items.length;
     var filled=items.filter(function(i){var e=edits[i.id]||{};return e.decision||e.assumption||e.implementation||e.comment}).length;
     var accepted=items.filter(function(i){return(edits[i.id]||{}).decision==='accepted'}).length;
+    var inProgress=items.filter(function(i){return(edits[i.id]||{}).decision==='conditional'}).length;
     var rejected=items.filter(function(i){return(edits[i.id]||{}).decision==='rejected'}).length;
-    return{total:total,filled:filled,pct:Math.round(filled/total*100),accepted:accepted,rejected:rejected};
+    return{total:total,filled:filled,pct:Math.round(filled/total*100),accepted:accepted,inProgress:inProgress,rejected:rejected};
   },[items,edits]);
 
   if(loading)return h('div',{style:{padding:40,textAlign:'center',color:'#64748b'}},'Loading...');
@@ -192,7 +193,7 @@ function App(){
       h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',maxWidth:1400,margin:'0 auto'}},
         h('div',null,
           h('div',{style:{fontSize:28,fontWeight:700}},'4NE-1 Gen4'),
-          h('div',{style:{fontSize:16,color:'#94a3b8'}},stats.filled+' bearbeitet | '+stats.accepted+' \u2713 | '+stats.rejected+' \u2717 | '+(stats.total-stats.filled)+' offen')
+          h('div',{style:{fontSize:16,color:'#94a3b8'}},stats.filled+' bearbeitet | '+stats.accepted+' \u2713 | '+stats.inProgress+' \u23f3 | '+stats.rejected+' \u2717 | '+(stats.total-stats.filled)+' offen')
         ),
         h('div',{style:{display:'flex',gap:10,alignItems:'center'}},
           h('div',{style:{background:'#1e293b',borderRadius:8,padding:'6px 14px',textAlign:'center'}},
@@ -215,7 +216,7 @@ function App(){
               d+='<table><tr><th>ID</th><th>Requirement</th><th>Kriterium</th><th>Gen4</th><th>P</th><th>\u2713/\u2717</th><th>Annahme</th><th>Umsetzung</th><th>Kommentar</th></tr>';
               list.forEach(function(it){
                 var e=edits[it.id]||{};
-                var dec=e.decision==='accepted'?'<span class="a">\u2713</span>':e.decision==='conditional'?'<span style="color:#ca8a04;font-weight:bold">\u26a0</span>':e.decision==='rejected'?'<span class="r">\u2717</span>':'\u25cb';
+                var dec=e.decision==='accepted'?'<span class="a">\u2713</span>':e.decision==='conditional'?'<span style="color:#ca8a04;font-weight:bold">\u23f3</span>':e.decision==='rejected'?'<span class="r">\u2717</span>':'\u25cb';
                 var rowBg=e.decision==='accepted'?'background:#f0fdf4':e.decision==='conditional'?'background:#fefce8':e.decision==='rejected'?'background:#fef2f2':'';d+='<tr style="'+rowBg+'"><td><b>'+esc(it.id)+'</b></td>';
                 d+='<td>'+esc(it.requirement.substring(0,80))+'</td>';
                 d+='<td>'+esc(it.criterion||'')+'</td>';
@@ -314,7 +315,7 @@ function App(){
                 d+='<table><tr><th>ID</th><th>Requirement</th><th>Kriterium</th><th>Gen4</th><th>P</th><th>\u2713</th><th>Annahme</th><th>Umsetzung</th><th>Kommentar</th></tr>';
                 chItems.forEach(function(it){
                   var e=edits[it.id]||{};
-                  var dec=e.decision==='accepted'?'<span class="a">\u2713</span>':e.decision==='conditional'?'\u26a0':e.decision==='rejected'?'<span class="r">\u2717</span>':'';
+                  var dec=e.decision==='accepted'?'<span class="a">\u2713</span>':e.decision==='conditional'?'\u23f3':e.decision==='rejected'?'<span class="r">\u2717</span>':'';
                   var rowBg=e.decision==='accepted'?'background:#f0fdf4':e.decision==='conditional'?'background:#fefce8':e.decision==='rejected'?'background:#fef2f2':'';
                   d+='<tr style="'+rowBg+'"><td><b>'+esc(it.id)+'</b></td><td>'+esc(it.requirement.substring(0,80))+'</td><td>'+esc(it.criterion||'')+'</td><td>'+(it.gen4?esc(it.gen4):'<span class="tbd">[TBD]</span>')+'</td><td>'+(it.prio||'-')+'</td><td>'+dec+'</td>';
                   d+='<td style="font-size:6pt;color:#1e293b">'+(e.assumption?esc(e.assumption):'')+'</td><td style="font-size:6pt;color:#1e293b">'+(e.implementation?esc(e.implementation):'')+'</td><td style="font-size:6pt;color:#1e293b">'+(e.comment?esc(e.comment):'')+'</td></tr>';
@@ -336,7 +337,7 @@ function App(){
               d+='<table><tr><th>ID</th><th>Requirement</th><th>Kriterium</th><th>Gen4</th><th>P</th><th>\u2713</th><th>Annahme</th><th>Umsetzung</th><th>Kommentar</th></tr>';
               list.forEach(function(it){
                 var e=edits[it.id]||{};
-                var dec=e.decision==='accepted'?'<span class="a">\u2713</span>':e.decision==='conditional'?'\u26a0':e.decision==='rejected'?'<span class="r">\u2717</span>':'';
+                var dec=e.decision==='accepted'?'<span class="a">\u2713</span>':e.decision==='conditional'?'\u23f3':e.decision==='rejected'?'<span class="r">\u2717</span>':'';
                 var rowBg=e.decision==='accepted'?'background:#f0fdf4':e.decision==='conditional'?'background:#fefce8':e.decision==='rejected'?'background:#fef2f2':'';
                 d+='<tr style="'+rowBg+'"><td><b>'+esc(it.id)+'</b></td><td>'+esc(it.requirement.substring(0,80))+'</td><td>'+esc(it.criterion||'')+'</td><td>'+(it.gen4?esc(it.gen4):'')+'</td><td>'+(it.prio||'-')+'</td><td>'+dec+'</td>';
                 d+='<td style="font-size:6pt;color:#1e293b">'+(e.assumption?esc(e.assumption):'')+'</td><td style="font-size:6pt;color:#1e293b">'+(e.implementation?esc(e.implementation):'')+'</td><td style="font-size:6pt;color:#1e293b">'+(e.comment?esc(e.comment):'')+'</td></tr>';
@@ -404,7 +405,7 @@ function App(){
               o+='<table><tr><th>ID</th><th>Requirement</th><th>Kriterium</th><th>Gen4</th><th>P</th><th>\u2713</th><th>Annahme</th><th>Umsetzung</th><th>Kommentar</th></tr>';
               list.forEach(function(it){
                 var e=edits[it.id]||{};
-                var dec=e.decision==='accepted'?'<span class="a">\u2713</span>':e.decision==='conditional'?'\u26a0':e.decision==='rejected'?'<span class="r">\u2717</span>':'';
+                var dec=e.decision==='accepted'?'<span class="a">\u2713</span>':e.decision==='conditional'?'\u23f3':e.decision==='rejected'?'<span class="r">\u2717</span>':'';
                 var rowBg=e.decision==='accepted'?'background:#f0fdf4':e.decision==='conditional'?'background:#fefce8':e.decision==='rejected'?'background:#fef2f2':'';
                 o+='<tr style="'+rowBg+'"><td><b>'+esc(it.id)+'</b></td><td>'+esc(it.requirement.substring(0,80))+'</td><td>'+esc(it.criterion||'')+'</td><td>'+(it.gen4?esc(it.gen4):'')+'</td><td>'+(e.prio||it.prio||'-')+'</td><td>'+dec+'</td>';
                 o+='<td style="font-size:6.5pt;color:#1e293b">'+(e.assumption?esc(e.assumption):'')+'</td><td style="font-size:6.5pt;color:#1e293b">'+(e.implementation?esc(e.implementation):'')+'</td><td style="font-size:6.5pt;color:#1e293b">'+(e.comment?esc(e.comment):'')+'</td></tr>';
@@ -477,7 +478,7 @@ function App(){
             items.forEach(function(it){
               var e=edits[it.id]||{};
               var vals=[it.id,e.chapter||it.chapter,it.requirement.replace(/\t/g,' '),it.criterion.replace(/\t/g,' '),it.gen4,it.prio,e.prio||'',
-                e.decision==='accepted'?'angenommen':e.decision==='conditional'?'vorbehalt':e.decision==='rejected'?'abgelehnt':'',
+                e.decision==='accepted'?'angenommen':e.decision==='conditional'?'in_arbeit':e.decision==='rejected'?'abgelehnt':'',
                 (e.assumption||'').replace(/\t/g,' '),(e.implementation||'').replace(/\t/g,' '),(e.comment||'').replace(/\t/g,' '),(e.alternative||'').replace(/\t/g,' '),
                 (e.hint!==undefined?e.hint:(it.hint||'')).replace(/\t/g,' '),e.zdfOk?'ja':''];
               rows.push(vals.join(sep));
@@ -508,7 +509,7 @@ function App(){
                       id=id.trim();
                       var e={};
                       var ent=cols[colIdx['Entscheidung']]||'';ent=ent.trim().toLowerCase();
-                      if(ent)e.decision=ent==='angenommen'?'accepted':ent==='vorbehalt'?'conditional':ent==='abgelehnt'?'rejected':'';
+                      if(ent)e.decision=ent==='angenommen'?'accepted':(ent==='vorbehalt'||ent==='in_arbeit')?'conditional':ent==='abgelehnt'?'rejected':'';
                       var fields=[['Annahme','assumption'],['Umsetzung','implementation'],['Kommentar','comment'],['Alternative','alternative'],['Hinweis','hint']];
                       fields.forEach(function(f2){var ci=colIdx[f2[0]];if(ci!==undefined&&cols[ci]&&cols[ci].trim())e[f2[1]]=cols[ci].trim()});
                       var pn=cols[colIdx['Prio (neu)']]||'';if(pn.trim())e.prio=pn.trim();
@@ -544,7 +545,7 @@ function App(){
                       id=id.trim();
                       var e={};
                       var ent=cols[colIdx['Entscheidung']]||'';ent=ent.trim().toLowerCase();
-                      if(ent)e.decision=ent==='angenommen'?'accepted':ent==='vorbehalt'?'conditional':ent==='abgelehnt'?'rejected':'';
+                      if(ent)e.decision=ent==='angenommen'?'accepted':(ent==='vorbehalt'||ent==='in_arbeit')?'conditional':ent==='abgelehnt'?'rejected':'';
                       var fields=[['Annahme','assumption'],['Umsetzung','implementation'],['Kommentar','comment'],['Alternative','alternative'],['Hinweis','hint']];
                       fields.forEach(function(f2){var ci=colIdx[f2[0]];if(ci!==undefined&&cols[ci]&&cols[ci].trim())e[f2[1]]=cols[ci].trim()});
                       var pn=cols[colIdx['Prio (neu)']]||'';if(pn.trim())e.prio=pn.trim();
@@ -601,7 +602,7 @@ function App(){
               alert('localStorage: '+count+' Items, '+filled+' Felder gefuellt.\n\nDies sind die Daten in DEINEM Browser (nicht auf dem Server).\nKlicke "Export CSV" um diese Daten zu sichern.');
             }catch(e){alert('localStorage leer oder nicht verfuegbar')}
           },style:{background:'#334155',color:'#94a3b8',border:'none',borderRadius:6,padding:'6px 10px',cursor:'pointer',fontSize:11}},'Local Data'),
-          saveStatus?h('span',{style:{fontSize:11,color:saveStatus==='error'?'#dc2626':saveStatus==='saving'?'#ca8a04':'#16a34a',fontWeight:600,marginLeft:4}},saveStatus==='saving'?'Saving...':saveStatus==='saved'?'Saved':saveStatus==='error'?'Error':''):null
+          saveStatus?h('span',{style:{fontSize:11,color:saveStatus==='error'?'#dc2626':saveStatus==='local'?'#ca8a04':saveStatus==='saving'?'#ca8a04':'#16a34a',fontWeight:600,marginLeft:4}},saveStatus==='saving'?t('saving'):saveStatus==='saved'?t('saved'):saveStatus==='local'?'Lokal gespeichert':saveStatus==='error'?'Error':''):null
         )
       )
     ),
@@ -697,7 +698,7 @@ function App(){
               (function(){var p=e.prio||item.prio;if(!p)return null;var changed=e.prio&&e.prio!==item.prio;return h('span',{style:{border:'2px solid '+(PC[p]||'#999'),color:PC[p],fontSize:14,fontWeight:700,padding:'2px 8px',borderRadius:3,flexShrink:0}},p+(changed?' ('+item.prio+')':''))})(),
               h('span',{style:{fontSize:18,color:'#1e293b',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:isExp?'normal':'nowrap'}},tr(item,'r')),item.zdf===0&&!e.zdfOk?h('span',{style:{fontSize:10,color:'#dc2626',background:'#fef2f2',padding:'1px 4px',borderRadius:3,marginLeft:4,flexShrink:0}},t('zdfMissing')):item.zdf===1&&!e.zdfOk?h('span',{style:{fontSize:10,color:'#ca8a04',background:'#fefce8',padding:'1px 4px',borderRadius:3,marginLeft:4,flexShrink:0}},'TBD'):null,
               e.decision==='accepted'?h('span',{style:{color:'#16a34a',fontWeight:700,fontSize:10}},'\u2713'):
-              e.decision==='conditional'?h('span',{style:{color:'#ca8a04',fontWeight:700,fontSize:10}},'\u26a0'):
+              e.decision==='conditional'?h('span',{style:{color:'#ca8a04',fontWeight:700,fontSize:10}},'\u23f3'):
               e.decision==='rejected'?h('span',{style:{color:'#dc2626',fontWeight:700,fontSize:10}},'\u2717'):
               h('span',{style:{fontSize:9,color:cnt>0?'#ca8a04':'#d1d5db'}},cnt>0?cnt+'/3':'\u25cb'),
               h('span',{style:{fontSize:16,color:'#94a3b8',transform:isExp?'rotate(180deg)':''}},
@@ -720,7 +721,7 @@ function App(){
                   h('div',{style:{fontSize:20,color:'#64748b',fontWeight:700,marginBottom:2}},t('decision')),
                   h('div',{style:{display:'flex',gap:3}},
                     h('button',{onClick:function(){upd(item.id,'decision',e.decision==='accepted'?'':'accepted')},style:{padding:'12px 22px',borderRadius:6,fontSize:18,border:e.decision==='accepted'?'2px solid #16a34a':'1px solid #d1d5db',background:e.decision==='accepted'?'#f0fdf4':'white',color:e.decision==='accepted'?'#16a34a':'#64748b',fontSize:11,cursor:'pointer'}},'\u2713 '+t('accept')),
-                    h('button',{onClick:function(){upd(item.id,'decision',e.decision==='conditional'?'':'conditional')},style:{padding:'12px 22px',borderRadius:6,fontSize:18,border:e.decision==='conditional'?'2px solid #ca8a04':'1px solid #d1d5db',background:e.decision==='conditional'?'#fefce8':'white',color:e.decision==='conditional'?'#ca8a04':'#64748b',fontSize:11,cursor:'pointer'}},'\u26a0 '+t('conditional')),
+                    h('button',{onClick:function(){upd(item.id,'decision',e.decision==='conditional'?'':'conditional')},style:{padding:'12px 22px',borderRadius:6,fontSize:18,border:e.decision==='conditional'?'2px solid #ca8a04':'1px solid #d1d5db',background:e.decision==='conditional'?'#fefce8':'white',color:e.decision==='conditional'?'#ca8a04':'#64748b',fontSize:11,cursor:'pointer'}},'\u23f3 '+t('conditional')),
                     h('button',{onClick:function(){upd(item.id,'decision',e.decision==='rejected'?'':'rejected')},style:{padding:'12px 22px',borderRadius:6,fontSize:18,border:e.decision==='rejected'?'2px solid #dc2626':'1px solid #d1d5db',background:e.decision==='rejected'?'#fef2f2':'white',color:e.decision==='rejected'?'#dc2626':'#64748b',fontSize:11,cursor:'pointer'}},'\u2717 '+t('reject')),
                     h('button',{onClick:function(){upd(item.id,'decision','')},style:{padding:'12px 22px',borderRadius:6,fontSize:18,border:'1px solid #d1d5db',background:'white',color:'#94a3b8',fontSize:11,cursor:'pointer'}},'\u25cb')
                   )
