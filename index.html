@@ -99,17 +99,48 @@ function App(){
   },[]);
 
   var _saveTimer=uref(null);
+  var _dirtyFields=uref({});
   var save=uc(function(ne){
     if(_saveTimer.current)clearTimeout(_saveTimer.current);
     _saveTimer.current=setTimeout(function(){
       var json=JSON.stringify(ne);
       try{localStorage.setItem(SK,json)}catch(e){}
-      fetch('https://neura-api.david-rybinski.workers.dev/data',{method:'POST',headers:{'Content-Type':'application/json'},body:json}).catch(function(){});
+      fetch('https://neura-api.david-rybinski.workers.dev/data',{method:'POST',headers:{'Content-Type':'application/json'},body:json}).then(function(){_dirtyFields.current={}}).catch(function(){});
     },3000);
   },[]);
   var upd=uc(function(id,field,value){
+    var df=_dirtyFields.current;if(!df[id])df[id]={};df[id][field]=true;
     setEdits(function(prev){var next=Object.assign({},prev);next[id]=Object.assign({},next[id]||{});next[id][field]=value;save(next);return next});
   },[save]);
+
+  ue(function(){
+    var iv=setInterval(function(){
+      fetch('https://neura-api.david-rybinski.workers.dev/data').then(function(r){return r.json()}).then(function(remote){
+        if(!remote||Object.keys(remote).length===0)return;
+        var dirty=_dirtyFields.current;
+        setEdits(function(prev){
+          var merged=Object.assign({},prev);
+          var changed=false;
+          Object.keys(remote).forEach(function(id){
+            var rf=remote[id]||{};
+            var lf=merged[id]||{};
+            var df=dirty[id]||{};
+            Object.keys(rf).forEach(function(f){
+              if(!df[f]&&rf[f]!==lf[f]){
+                if(!merged[id])merged[id]={};
+                merged[id]=Object.assign({},merged[id]);
+                merged[id][f]=rf[f];
+                changed=true;
+              }
+            });
+          });
+          if(changed){try{localStorage.setItem(SK,JSON.stringify(merged))}catch(e){}}
+          return changed?merged:prev;
+        });
+      }).catch(function(){});
+    },30000);
+    return function(){clearInterval(iv)};
+  },[]);
 
   var filtered=um(function(){
     return items.filter(function(item){
