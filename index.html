@@ -38,8 +38,10 @@ function checkPw(){
 }
 // Auto-login if already authenticated in this session
 if(sessionStorage.getItem('4ne1-auth')==='ok'){
-  document.getElementById('login').style.display='none';
-  document.getElementById('root').style.display='block';
+  document.addEventListener('DOMContentLoaded',function(){
+    document.getElementById('login').style.display='none';
+    document.getElementById('root').style.display='block';
+  });
 }
 </script>
 <div id="loading" style="display:none">Loading dashboard...</div>
