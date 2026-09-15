@@ -523,6 +523,55 @@ function App(){
             };inp.click();
           },style:{background:'#334155',color:'#94a3b8',border:'none',borderRadius:6,padding:'6px 10px',cursor:'pointer',fontSize:11}},'Import CSV/JSON'),
           h('button',{onClick:function(){
+            var inp=document.createElement('input');inp.type='file';inp.accept='.csv,.tsv,.json';
+            inp.onchange=function(ev){
+              var f=ev.target.files[0];if(!f)return;
+              var r2=new FileReader();r2.onload=function(ev2){
+                try{
+                  var text=ev2.target.result;
+                  var incoming={};
+                  if(f.name.endsWith('.json')){
+                    incoming=JSON.parse(text);
+                  } else {
+                    var sep=text.indexOf('\t')>=0?'\t':',';
+                    var lines=text.replace(/﻿/,'').split('\n');
+                    var headers=lines[0].split(sep);
+                    var colIdx={};headers.forEach(function(hh,i){colIdx[hh.trim()]=i});
+                    for(var li=1;li<lines.length;li++){
+                      var cols=lines[li].split(sep);
+                      var id=cols[colIdx['ID']]||'';if(!id.trim())continue;
+                      id=id.trim();
+                      var e={};
+                      var ent=cols[colIdx['Entscheidung']]||'';ent=ent.trim().toLowerCase();
+                      if(ent)e.decision=ent==='angenommen'?'accepted':ent==='vorbehalt'?'conditional':ent==='abgelehnt'?'rejected':'';
+                      var fields=[['Annahme','assumption'],['Umsetzung','implementation'],['Kommentar','comment'],['Alternative','alternative'],['Hinweis','hint']];
+                      fields.forEach(function(f2){var ci=colIdx[f2[0]];if(ci!==undefined&&cols[ci]&&cols[ci].trim())e[f2[1]]=cols[ci].trim()});
+                      var pn=cols[colIdx['Prio (neu)']]||'';if(pn.trim())e.prio=pn.trim();
+                      var kap=cols[colIdx['Kapitel']]||'';if(kap.trim())e.chapter=kap.trim();
+                      if((cols[colIdx['ZDF OK']]||'').trim()==='ja')e.zdfOk=true;
+                      if(Object.keys(e).length>0)incoming[id]=e;
+                    }
+                  }
+                  var added=0;
+                  setEdits(function(prev){
+                    var merged=JSON.parse(JSON.stringify(prev));
+                    Object.keys(incoming).forEach(function(id){
+                      if(!merged[id])merged[id]={};
+                      Object.keys(incoming[id]).forEach(function(field){
+                        if(!merged[id][field]){merged[id][field]=incoming[id][field];added++}
+                      });
+                    });
+                    localStorage.setItem(SK,JSON.stringify(merged));
+                    var delta={};Object.keys(merged).forEach(function(id){delta[id]=merged[id]});
+                    fetch('https://neura-api.david-rybinski.workers.dev/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(merged)}).catch(function(){});
+                    return merged;
+                  });
+                  setTimeout(function(){alert('Merge: '+added+' leere Felder aufgefuellt aus '+Object.keys(incoming).length+' items. Bestehende Daten blieben erhalten.')},100);
+                }catch(err){alert('Import-Fehler: '+err.message)}
+              };r2.readAsText(f);
+            };inp.click();
+          },style:{background:'#334155',color:'#f59e0b',border:'1px solid #f59e0b',borderRadius:6,padding:'6px 10px',cursor:'pointer',fontSize:11,fontWeight:600}},'Merge Import'),
+          h('button',{onClick:function(){
             if(confirm('ZDF & Hinweise zuruecksetzen? (Nur ZDF-Status und Hinweistexte werden zurueckgesetzt, alle anderen Eingaben bleiben erhalten)')){
               setEdits(function(prev){
                 var next={};
