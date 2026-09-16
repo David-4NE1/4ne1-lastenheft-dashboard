@@ -1032,6 +1032,7 @@ function App(){
               e.decision==='conditional'?h('span',{style:{color:'#ca8a04',fontWeight:700,fontSize:10}},'\u23f3'):
               e.decision==='rejected'?h('span',{style:{color:'#dc2626',fontWeight:700,fontSize:10}},'\u2717'):
               h('span',{style:{fontSize:9,color:cnt>0?'#ca8a04':'#d1d5db'}},cnt>0?cnt+'/3':'\u25cb'),
+              isAdvDev?h('span',{style:{fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:4,flexShrink:0,border:'1px solid '+(advDone(e)?'#16a34a':'#94a3b8'),background:advDone(e)?'#f0fdf4':'white',color:advDone(e)?'#16a34a':'#94a3b8'}},advDone(e)?'Bearbeitet':'Offen'):null,
               h('span',{style:{fontSize:16,color:'#94a3b8',transform:isExp?'rotate(180deg)':''}},
                 '\u25BE')
             ),
