@@ -908,7 +908,18 @@ function App(){
                   ),
                   h('div',{style:{background:'#fef2f2',borderRadius:8,border:'2px solid #991b1b',padding:16}},
                     h('div',{style:{fontSize:13,fontWeight:700,color:'#991b1b',marginBottom:10,textTransform:'uppercase',letterSpacing:1}},'AdvDev Antwort'),
-                    h('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:12}},
+                    h('div',{style:{marginBottom:14}},
+                      h('div',{style:{fontSize:10,fontWeight:600,color:'#991b1b',marginBottom:6}},'ADVDEV ENTSCHEIDUNG'),
+                      h('div',{style:{display:'flex',gap:6,flexWrap:'wrap'}},
+                        h('button',{onClick:function(){upd(item.id,'advDecision',e.advDecision==='accepted'?'':'accepted')},
+                          style:{padding:'10px 20px',borderRadius:6,border:e.advDecision==='accepted'?'2px solid #16a34a':'1px solid #d1d5db',background:e.advDecision==='accepted'?'#f0fdf4':'white',color:e.advDecision==='accepted'?'#16a34a':'#64748b',fontSize:13,fontWeight:600,cursor:'pointer'}},'\u2713 Akzeptieren (Pre-Series Vorschlag \u00fcbernehmen)'),
+                        h('button',{onClick:function(){upd(item.id,'advDecision',e.advDecision==='rework'?'':'rework')},
+                          style:{padding:'10px 20px',borderRadius:6,border:e.advDecision==='rework'?'2px solid #f59e0b':'1px solid #d1d5db',background:e.advDecision==='rework'?'#fffbeb':'white',color:e.advDecision==='rework'?'#f59e0b':'#64748b',fontSize:13,fontWeight:600,cursor:'pointer'}},'\u21bb \u00dcberarbeiten (an Pre-Series zur\u00fccksenden)'),
+                        h('button',{onClick:function(){upd(item.id,'advDecision',e.advDecision==='rejected'?'':'rejected')},
+                          style:{padding:'10px 20px',borderRadius:6,border:e.advDecision==='rejected'?'2px solid #dc2626':'1px solid #d1d5db',background:e.advDecision==='rejected'?'#fef2f2':'white',color:e.advDecision==='rejected'?'#dc2626':'#64748b',fontSize:13,fontWeight:600,cursor:'pointer'}},'\u2717 Ablehnen (Urspr\u00fcngliches Requirement bleibt)')
+                      )
+                    ),
+                    e.advDecision==='rework'?h('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:12}},
                       h('div',null,
                         h('label',{style:{fontSize:10,fontWeight:600,color:e.advGen4?'#991b1b':'#94a3b8',display:'block',marginBottom:3}},'Neues Gen4 Ziel'),
                         h('textarea',{value:e.advGen4||'',onChange:function(ev){upd(item.id,'advGen4',ev.target.value)},placeholder:item.gen4?'Eigener Vorschlag (Pre-Series: '+item.gen4+')':'Eigenes Gen4 Ziel...',rows:2,
@@ -919,23 +930,16 @@ function App(){
                         h('textarea',{value:e.advCriterion||'',onChange:function(ev){upd(item.id,'advCriterion',ev.target.value)},placeholder:item.criterion?'Eigener Vorschlag (Pre-Series: '+item.criterion+')':'Eigenes Kriterium...',rows:2,
                           style:{width:'100%',borderRadius:6,border:'2px solid '+(e.advCriterion?'#991b1b':'#fca5a5'),padding:'8px 12px',fontSize:16,resize:'vertical',background:e.advCriterion?'#fef2f2':'white'}})
                       )
-                    ),
-                    h('div',{style:{marginBottom:12}},
-                      h('label',{style:{fontSize:10,fontWeight:600,color:e.newUnderstanding?'#991b1b':'#94a3b8',display:'block',marginBottom:3}},'Neues Verst\u00e4ndnis / Kommentar'),
-                      h('textarea',{value:e.newUnderstanding||'',onChange:function(ev){upd(item.id,'newUnderstanding',ev.target.value)},placeholder:'Wie wird dieses Requirement verstanden? Reaktion / Vorschlag...',rows:3,
-                        style:{width:'100%',borderRadius:6,border:'2px solid '+(e.newUnderstanding?'#991b1b':'#fca5a5'),padding:'8px 12px',fontSize:16,resize:'vertical',background:e.newUnderstanding?'#fef2f2':'white'}})
-                    ),
-                    h('div',null,
-                      h('div',{style:{fontSize:10,fontWeight:600,color:'#991b1b',marginBottom:6}},'ADVDEV ENTSCHEIDUNG'),
-                      h('div',{style:{display:'flex',gap:6}},
-                        h('button',{onClick:function(){upd(item.id,'advDecision',e.advDecision==='accepted'?'':'accepted')},
-                          style:{padding:'10px 20px',borderRadius:6,border:e.advDecision==='accepted'?'2px solid #16a34a':'1px solid #d1d5db',background:e.advDecision==='accepted'?'#f0fdf4':'white',color:e.advDecision==='accepted'?'#16a34a':'#64748b',fontSize:13,fontWeight:600,cursor:'pointer'}},'\u2713 Akzeptieren (Pre-Series Vorschlag \u00fcbernehmen)'),
-                        h('button',{onClick:function(){upd(item.id,'advDecision',e.advDecision==='rework'?'':'rework')},
-                          style:{padding:'10px 20px',borderRadius:6,border:e.advDecision==='rework'?'2px solid #f59e0b':'1px solid #d1d5db',background:e.advDecision==='rework'?'#fffbeb':'white',color:e.advDecision==='rework'?'#f59e0b':'#64748b',fontSize:13,fontWeight:600,cursor:'pointer'}},'\u21bb \u00dcberarbeiten (an Pre-Series zur\u00fccksenden)'),
-                        h('button',{onClick:function(){upd(item.id,'advDecision',e.advDecision==='rejected'?'':'rejected')},
-                          style:{padding:'10px 20px',borderRadius:6,border:e.advDecision==='rejected'?'2px solid #dc2626':'1px solid #d1d5db',background:e.advDecision==='rejected'?'#fef2f2':'white',color:e.advDecision==='rejected'?'#dc2626':'#64748b',fontSize:13,fontWeight:600,cursor:'pointer'}},'\u2717 Ablehnen (Urspr\u00fcngliches Requirement bleibt)')
-                      )
-                    )
+                    ):null,
+                    e.advDecision==='rework'||e.advDecision==='rejected'?h('div',{style:{marginBottom:12}},
+                      h('label',{style:{fontSize:10,fontWeight:600,color:e.advDecision==='rejected'&&!e.newUnderstanding?'#dc2626':e.newUnderstanding?'#991b1b':'#94a3b8',display:'block',marginBottom:3}},(e.advDecision==='rejected'?'\u26a0 Begr\u00fcndung (Pflichtfeld)':'Begr\u00fcndung / Kommentar')),
+                      h('textarea',{value:e.newUnderstanding||'',onChange:function(ev){upd(item.id,'newUnderstanding',ev.target.value)},placeholder:e.advDecision==='rejected'?'Warum bleibt das urspr\u00fcngliche Requirement bestehen?':'Begr\u00fcndung f\u00fcr \u00dcberarbeitung / Vorschlag...',rows:3,
+                        style:{width:'100%',borderRadius:6,border:'2px solid '+(e.advDecision==='rejected'&&!e.newUnderstanding?'#dc2626':e.newUnderstanding?'#991b1b':'#fca5a5'),padding:'8px 12px',fontSize:16,resize:'vertical',background:e.advDecision==='rejected'&&!e.newUnderstanding?'#fef2f2':e.newUnderstanding?'#fef2f2':'white'}})
+                    ):e.advDecision==='accepted'?h('div',{style:{marginBottom:12}},
+                      h('label',{style:{fontSize:10,fontWeight:600,color:e.newUnderstanding?'#991b1b':'#94a3b8',display:'block',marginBottom:3}},'Kommentar (optional)'),
+                      h('textarea',{value:e.newUnderstanding||'',onChange:function(ev){upd(item.id,'newUnderstanding',ev.target.value)},placeholder:'Optionaler Kommentar zur Akzeptierung...',rows:2,
+                        style:{width:'100%',borderRadius:6,border:'1px solid '+(e.newUnderstanding?'#991b1b':'#fca5a5'),padding:'8px 12px',fontSize:16,resize:'vertical',background:e.newUnderstanding?'#fef2f2':'white'}})
+                    ):null
                   )
                 );
               })():
