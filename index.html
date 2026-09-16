@@ -876,22 +876,33 @@ function App(){
           h('button',{onClick:function(){
             var esc=function(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')};
             var date=new Date().toISOString().split('T')[0];var pw=window.open('','_blank');
-            var css='@page{size:A4 landscape;margin:1cm}body{font-family:Calibri;font-size:8pt;color:#1B2E45}h1{color:#1F3864;font-size:13pt;border-bottom:2px solid #2F5496;padding-bottom:2pt}table{border-collapse:collapse;width:100%;margin:6px 0;font-size:7pt}th{padding:3px 4px;color:white}td{border:1px solid #d1d5db;padding:3px 4px;vertical-align:top}.ps{background:#166534}.ad{background:#991b1b}.re{background:#1e40af}';
+            var css='@page{size:A4 landscape;margin:1cm}body{font-family:Calibri;font-size:8pt;color:#1B2E45}h1{color:#1F3864;font-size:13pt;border-bottom:2px solid #2F5496;padding-bottom:2pt}table{border-collapse:collapse;width:100%;margin:6px 0;font-size:7pt}th{padding:3px 4px;color:white;font-size:6.5pt}td{border:1px solid #c0c0c0;padding:3px 4px;vertical-align:top}.ps{background:#166534}.ad{background:#991b1b}.re{background:#1e40af}.psc{background:#f0fdf4;color:#14532d}.adc{background:#fef2f2;color:#7f1d1d}.rec{background:#eff6ff;color:#1e3a5f}.acc{color:#16a34a;font-weight:bold}.rew{color:#ca8a04;font-weight:bold}.rej{color:#dc2626;font-weight:bold}.pen{color:#94a3b8;font-style:italic}';
             var d='<html><head><meta charset="utf-8"><style>'+css+'</style></head><body>';
             d+='<h1 style="text-align:center;font-size:16pt">4NE-1 Gen4 — Rev-2 Komplettübersicht</h1>';
-            d+='<p style="text-align:center;color:#64748b;font-size:8pt">'+date+' | '+rev2Answered.length+' Antworten erhalten | '+rev2Pending.length+' ausstehend</p>';
+            d+='<p style="text-align:center;color:#64748b;font-size:8pt">'+date+' | <span style="color:#166534;font-weight:bold">'+rev2Answered.length+' Antworten erhalten</span> | <span style="color:#991b1b;font-weight:bold">'+rev2Pending.length+' ausstehend</span></p>';
             d+='<table><tr><th class="ps">ID</th><th class="ps">Requirement</th><th class="ps">PS Gen4 Ziel</th><th class="ps">PS Kriterium</th><th class="ps">PS Entsch.</th><th class="ps">PS Begründung</th><th class="ad">AD Entsch.</th><th class="ad">AD Gen4 Ziel</th><th class="ad">AD Kriterium</th><th class="ad">AD Begründung</th><th class="re">PS Antwort</th><th class="re">PS Kommentar</th></tr>';
             rev2Answered.concat(rev2Pending).forEach(function(it){
               var e=edits[it.id]||{};
+              var psDecCls=e.decision==='conditional'?'rew':'rej';
               var psDec=e.decision==='conditional'?'⏳ In Arbeit':'✗ Abgelehnt';
+              var adDecCls=e.advDecision==='accepted'?'acc':e.advDecision==='rework'?'rew':e.advDecision==='rejected'?'rej':'pen';
               var adDec=e.advDecision==='accepted'?'✓ Akzeptiert':e.advDecision==='rework'?'↻ Überarb.':e.advDecision==='rejected'?'✗ Abgelehnt':'—';
+              var psRespCls=e.psResponse==='accepted'?'acc':e.psResponse==='conditional'?'rew':e.psResponse==='rejected'?'rej':'pen';
               var psResp=e.psResponse==='accepted'?'✓ Zustimmung':e.psResponse==='conditional'?'⏳ In Arbeit':e.psResponse==='rejected'?'✗ Abgelehnt':'—';
-              d+='<tr><td><b>'+esc(it.id)+'</b></td><td>'+esc(it.requirement.substring(0,60))+'</td>';
-              d+='<td>'+esc(it.gen4||'')+'</td><td>'+esc(it.criterion||'')+'</td><td>'+psDec+'</td><td style="font-size:6pt">'+esc(e.alternative||'')+'</td>';
-              d+='<td style="background:'+(e.advDecision==='accepted'?'#f0fdf4':e.advDecision==='rework'?'#fffbeb':'#fef2f2')+'">'+adDec+'</td>';
-              d+='<td>'+esc(e.advGen4||'')+'</td><td>'+esc(e.advCriterion||'')+'</td><td style="font-size:6pt">'+esc(e.newUnderstanding||'')+'</td>';
-              d+='<td style="background:'+(e.psResponse==='accepted'?'#f0fdf4':e.psResponse==='conditional'?'#fefce8':e.psResponse==='rejected'?'#fef2f2':'white')+'">'+psResp+'</td>';
-              d+='<td style="font-size:6pt">'+esc(e.psResponseComment||'')+'</td></tr>';
+              d+='<tr>';
+              d+='<td class="psc" style="font-weight:bold">'+esc(it.id)+'</td>';
+              d+='<td class="psc">'+esc(it.requirement.substring(0,60))+'</td>';
+              d+='<td class="psc">'+esc(it.gen4||'')+'</td>';
+              d+='<td class="psc">'+esc(it.criterion||'')+'</td>';
+              d+='<td class="psc"><span class="'+psDecCls+'">'+psDec+'</span></td>';
+              d+='<td class="psc" style="font-size:6pt">'+esc(e.alternative||'')+'</td>';
+              d+='<td class="adc"><span class="'+adDecCls+'">'+adDec+'</span></td>';
+              d+='<td class="adc">'+esc(e.advGen4||'')+'</td>';
+              d+='<td class="adc">'+esc(e.advCriterion||'')+'</td>';
+              d+='<td class="adc" style="font-size:6pt">'+esc(e.newUnderstanding||'')+'</td>';
+              d+='<td class="rec"><span class="'+psRespCls+'">'+psResp+'</span></td>';
+              d+='<td class="rec" style="font-size:6pt">'+esc(e.psResponseComment||'')+'</td>';
+              d+='</tr>';
             });
             d+='</table></body></html>';pw.document.write(d);pw.document.close();setTimeout(function(){pw.print()},500);
           },style:{background:'#1e40af',color:'white',border:'none',borderRadius:6,padding:'8px 16px',cursor:'pointer',fontSize:13,fontWeight:600}},'📄 PDF Komplett'),
@@ -899,22 +910,28 @@ function App(){
             var esc=function(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')};
             var date=new Date().toISOString().split('T')[0];var pw=window.open('','_blank');
             var openItems=rev2Answered.concat(rev2Pending).filter(function(it){var e=edits[it.id]||{};return !e.psResponse||e.psResponse==='conditional'||e.psResponse==='rejected'});
-            var css='@page{size:A4;margin:1.2cm}body{font-family:Calibri;font-size:8pt;color:#1B2E45}h1{color:#1F3864;font-size:13pt;border-bottom:2px solid #2F5496;padding-bottom:2pt}table{border-collapse:collapse;width:100%;margin:6px 0;font-size:7.5pt}th{background:#991b1b;color:white;padding:3px 4px}td{border:1px solid #d1d5db;padding:3px 4px;vertical-align:top}';
+            var css='@page{size:A4;margin:1.2cm}body{font-family:Calibri;font-size:8pt;color:#1B2E45}h1{color:#991b1b;font-size:13pt;border-bottom:2px solid #991b1b;padding-bottom:2pt}table{border-collapse:collapse;width:100%;margin:6px 0;font-size:7.5pt}th{background:#991b1b;color:white;padding:4px 6px}td{border:1px solid #c0c0c0;padding:4px 6px;vertical-align:top}.w{background:#fefce8;color:#92400e;font-weight:bold}.d{background:#fef2f2;color:#991b1b;font-weight:bold}.acc{color:#16a34a;font-weight:bold}.rew{color:#ca8a04;font-weight:bold}.rej{color:#dc2626;font-weight:bold}.pen{color:#94a3b8;font-style:italic}';
             var d='<html><head><meta charset="utf-8"><style>'+css+'</style></head><body>';
-            d+='<h1 style="text-align:center;font-size:16pt">4NE-1 Gen4 — Offene Punkte (Rev-2)</h1>';
-            d+='<p style="text-align:center;color:#64748b;font-size:8pt">'+date+' | '+openItems.length+' offene Punkte</p>';
-            if(openItems.length===0){d+='<p style="text-align:center;color:#16a34a;font-size:12pt;margin-top:40px">✓ Keine offenen Punkte — alle Items abgestimmt!</p>';}
+            d+='<h1 style="text-align:center;font-size:16pt">⚠ 4NE-1 Gen4 — Offene Punkte (Rev-2)</h1>';
+            d+='<p style="text-align:center;font-size:9pt">'+date+' | <span style="color:#991b1b;font-weight:bold;font-size:11pt">'+openItems.length+' offene Punkte</span></p>';
+            if(openItems.length===0){d+='<p style="text-align:center;color:#16a34a;font-size:14pt;margin-top:40px;font-weight:bold">✓ Keine offenen Punkte — alle Items abgestimmt!</p>';}
             else{d+='<table><tr><th>ID</th><th>Requirement</th><th>PS Entscheidung</th><th>AdvDev Antwort</th><th>PS Rückmeldung</th><th>Status</th></tr>';
             openItems.forEach(function(it){
               var e=edits[it.id]||{};
-              var adDec=e.advDecision==='accepted'?'Akzeptiert':e.advDecision==='rework'?'Überarbeiten':e.advDecision==='rejected'?'Abgelehnt':'Ausstehend';
-              var psResp=e.psResponse==='conditional'?'In Arbeit':e.psResponse==='rejected'?'Abgelehnt':'Offen';
+              var adDecCls=e.advDecision==='accepted'?'acc':e.advDecision==='rework'?'rew':e.advDecision==='rejected'?'rej':'pen';
+              var adDec=e.advDecision==='accepted'?'✓ Akzeptiert':e.advDecision==='rework'?'↻ Überarbeiten':e.advDecision==='rejected'?'✗ Abgelehnt':'Ausstehend';
+              var psRespCls=e.psResponse==='conditional'?'rew':e.psResponse==='rejected'?'rej':'pen';
+              var psResp=e.psResponse==='conditional'?'⏳ In Arbeit':e.psResponse==='rejected'?'✗ Abgelehnt':'Offen';
               var status=!e.advDecision?'Warte auf AdvDev':!e.psResponse?'Warte auf PS':'Offen';
-              d+='<tr><td><b>'+esc(it.id)+'</b></td><td>'+esc(it.requirement.substring(0,80))+'</td>';
-              d+='<td>'+esc(e.decision==='conditional'?'In Arbeit':'Abgelehnt')+'</td>';
-              d+='<td>'+adDec+(e.advGen4?' | Neues Ziel: '+esc(e.advGen4):'')+(e.advCriterion?' | Neues Krit.: '+esc(e.advCriterion):'')+'</td>';
-              d+='<td>'+psResp+(e.psResponseComment?' — '+esc(e.psResponseComment):'')+'</td>';
-              d+='<td style="font-weight:bold;color:#991b1b">'+status+'</td></tr>';
+              var statusCls=!e.advDecision?'d':'w';
+              d+='<tr>';
+              d+='<td style="background:#f0fdf4;font-weight:bold;color:#166534">'+esc(it.id)+'</td>';
+              d+='<td>'+esc(it.requirement.substring(0,80))+'</td>';
+              d+='<td style="background:#f0fdf4"><span class="'+(e.decision==='conditional'?'rew':'rej')+'">'+esc(e.decision==='conditional'?'⏳ In Arbeit':'✗ Abgelehnt')+'</span></td>';
+              d+='<td style="background:#fef2f2"><span class="'+adDecCls+'">'+adDec+'</span>'+(e.advGen4?'<br><small>Ziel: '+esc(e.advGen4)+'</small>':'')+(e.advCriterion?'<br><small>Krit.: '+esc(e.advCriterion)+'</small>':'')+'</td>';
+              d+='<td style="background:#eff6ff"><span class="'+psRespCls+'">'+psResp+'</span>'+(e.psResponseComment?'<br><small>'+esc(e.psResponseComment)+'</small>':'')+'</td>';
+              d+='<td class="'+statusCls+'">'+status+'</td>';
+              d+='</tr>';
             });
             d+='</table>';}
             d+='</body></html>';pw.document.write(d);pw.document.close();setTimeout(function(){pw.print()},500);
