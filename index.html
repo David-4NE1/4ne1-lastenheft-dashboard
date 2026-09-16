@@ -243,13 +243,13 @@ function App(){
 
   return h('div',{style:{minHeight:'100vh'}},
     h('div',{style:{background:'#0f172a',color:'white',padding:'8px 24px',position:'sticky',top:0,zIndex:1000}},
-      h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',maxWidth:1400,margin:'0 auto'}},
-        h('div',null,
+      h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',maxWidth:1400,margin:'0 auto',gap:24}},
+        h('div',{style:{flexShrink:0,minWidth:280}},
           h('div',{style:{fontSize:28,fontWeight:700}},isAdvDev?'4NE-1 Gen4 \u2014 AdvDev':'4NE-1 Gen4'),
           isAdvDev?h('div',{style:{fontSize:16,color:'#f59e0b'}},(stats.inProgress+stats.rejected)+' Items ('+stats.inProgress+' \u23f3 In Arbeit | '+stats.rejected+' \u2717 Abgelehnt)'):
           h('div',{style:{fontSize:16,color:'#94a3b8'}},stats.filled+' bearbeitet | '+stats.accepted+' \u2713 | '+stats.inProgress+' \u23f3 | '+stats.rejected+' \u2717 | '+(stats.total-stats.filled)+' offen')
         ),
-        h('div',{style:{display:'flex',gap:10,alignItems:'center'}},
+        h('div',{style:{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap',justifyContent:'flex-end'}},
           !isAdvDev?h('select',{value:revView,onChange:function(ev){setRevView(ev.target.value);setExpandedId(null)},
             style:{padding:'8px 16px',borderRadius:8,fontSize:16,fontWeight:700,border:'2px solid '+(revView==='rev2'?'#991b1b':'#60e6a5'),background:revView==='rev2'?'#991b1b':'#1e293b',color:'white',cursor:'pointer'}},
             h('option',{value:'rev1'},'Rev-1 (Aktuell)'),h('option',{value:'rev2'},'Rev-2 (AdvDev Antwort)')
