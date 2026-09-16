@@ -273,10 +273,10 @@ function App(){
                 d+='<td class="'+(e.implementation?'green':'red')+'">'+(e.implementation||'[offen]')+'</td>';
                 d+='<td'+(e.comment?' class="green"':'')+'>'+((e.comment?esc(e.comment):''))+'</td></tr>';
                 if(e.alternative)d+='<tr><td colspan=9 style="background:#fef2f2;border-left:2px solid #dc2626;font-size:6.5pt"><b>Alternative:</b> '+esc(e.alternative)+'</td></tr>';
-                if(e.newUnderstanding)d+='<tr><td colspan=9 style="background:#eff6ff;border-left:2px solid #3b82f6;font-size:6.5pt"><b>Neues Verständnis (AdvDev):</b> '+esc(e.newUnderstanding)+'</td></tr>';
-                if(e.advGen4)d+='<tr><td colspan=9 style="background:#faf5ff;border-left:2px solid #a78bfa;font-size:6.5pt"><b>AdvDev Gen4 Ziel:</b> '+esc(e.advGen4)+'</td></tr>';
-                if(e.advCriterion)d+='<tr><td colspan=9 style="background:#faf5ff;border-left:2px solid #a78bfa;font-size:6.5pt"><b>AdvDev Kriterium:</b> '+esc(e.advCriterion)+'</td></tr>';
-                if(e.advDecision)d+='<tr><td colspan=9 style="background:#faf5ff;border-left:2px solid #a78bfa;font-size:6.5pt"><b>AdvDev Entscheidung:</b> '+(e.advDecision==='accepted'?'Akzeptiert':e.advDecision==='rework'?'Überarbeiten':'Abgelehnt')+'</td></tr>';
+                if(e.newUnderstanding)d+='<tr><td colspan=9 style="background:#f0fdf4;border-left:2px solid #166534;font-size:6.5pt"><b>Neues Verständnis (AdvDev):</b> '+esc(e.newUnderstanding)+'</td></tr>';
+                if(e.advGen4)d+='<tr><td colspan=9 style="background:#fef2f2;border-left:2px solid #991b1b;font-size:6.5pt"><b>AdvDev Gen4 Ziel:</b> '+esc(e.advGen4)+'</td></tr>';
+                if(e.advCriterion)d+='<tr><td colspan=9 style="background:#fef2f2;border-left:2px solid #991b1b;font-size:6.5pt"><b>AdvDev Kriterium:</b> '+esc(e.advCriterion)+'</td></tr>';
+                if(e.advDecision)d+='<tr><td colspan=9 style="background:#fef2f2;border-left:2px solid #991b1b;font-size:6.5pt"><b>AdvDev Entscheidung:</b> '+(e.advDecision==='accepted'?'Akzeptiert':e.advDecision==='rework'?'Überarbeiten':'Abgelehnt')+'</td></tr>';
               });
               d+='</table>';
             });
@@ -370,10 +370,10 @@ function App(){
                   d+='<tr style="'+rowBg+'"><td><b>'+esc(it.id)+'</b></td><td>'+esc(it.requirement.substring(0,80))+'</td><td>'+esc(it.criterion||'')+'</td><td>'+(it.gen4?esc(it.gen4):'<span class="tbd">[TBD]</span>')+'</td><td>'+(it.prio||'-')+'</td><td>'+dec+'</td>';
                   d+='<td style="font-size:6pt;color:#1e293b">'+(e.assumption?esc(e.assumption):'')+'</td><td style="font-size:6pt;color:#1e293b">'+(e.implementation?esc(e.implementation):'')+'</td><td style="font-size:6pt;color:#1e293b">'+(e.comment?esc(e.comment):'')+'</td></tr>';
                   if(e.alternative)d+='<tr style="background:#fef2f2"><td colspan=9 style="border-left:2px solid #dc2626;font-size:6pt"><b>Alternative:</b> '+esc(e.alternative)+'</td></tr>';
-                  if(e.newUnderstanding)d+='<tr style="background:#eff6ff"><td colspan=9 style="border-left:2px solid #3b82f6;font-size:6pt"><b>Neues Verständnis (AdvDev):</b> '+esc(e.newUnderstanding)+'</td></tr>';
-                  if(e.advGen4)d+='<tr style="background:#faf5ff"><td colspan=9 style="border-left:2px solid #a78bfa;font-size:6pt"><b>AdvDev Gen4 Ziel:</b> '+esc(e.advGen4)+'</td></tr>';
-                  if(e.advCriterion)d+='<tr style="background:#faf5ff"><td colspan=9 style="border-left:2px solid #a78bfa;font-size:6pt"><b>AdvDev Kriterium:</b> '+esc(e.advCriterion)+'</td></tr>';
-                  if(e.advDecision)d+='<tr style="background:#faf5ff"><td colspan=9 style="border-left:2px solid #a78bfa;font-size:6pt"><b>AdvDev Entscheidung:</b> '+(e.advDecision==='accepted'?'Akzeptiert':e.advDecision==='rework'?'Überarbeiten':'Abgelehnt')+'</td></tr>';
+                  if(e.newUnderstanding)d+='<tr style="background:#f0fdf4"><td colspan=9 style="border-left:2px solid #166534;font-size:6pt"><b>Neues Verständnis (AdvDev):</b> '+esc(e.newUnderstanding)+'</td></tr>';
+                  if(e.advGen4)d+='<tr style="background:#fef2f2"><td colspan=9 style="border-left:2px solid #991b1b;font-size:6pt"><b>AdvDev Gen4 Ziel:</b> '+esc(e.advGen4)+'</td></tr>';
+                  if(e.advCriterion)d+='<tr style="background:#fef2f2"><td colspan=9 style="border-left:2px solid #991b1b;font-size:6pt"><b>AdvDev Kriterium:</b> '+esc(e.advCriterion)+'</td></tr>';
+                  if(e.advDecision)d+='<tr style="background:#fef2f2"><td colspan=9 style="border-left:2px solid #991b1b;font-size:6pt"><b>AdvDev Entscheidung:</b> '+(e.advDecision==='accepted'?'Akzeptiert':e.advDecision==='rework'?'Überarbeiten':'Abgelehnt')+'</td></tr>';
                 });
                 d+='</table>';
                 // Mark items as rendered
@@ -396,10 +396,10 @@ function App(){
                 d+='<tr style="'+rowBg+'"><td><b>'+esc(it.id)+'</b></td><td>'+esc(it.requirement.substring(0,80))+'</td><td>'+esc(it.criterion||'')+'</td><td>'+(it.gen4?esc(it.gen4):'')+'</td><td>'+(it.prio||'-')+'</td><td>'+dec+'</td>';
                 d+='<td style="font-size:6pt;color:#1e293b">'+(e.assumption?esc(e.assumption):'')+'</td><td style="font-size:6pt;color:#1e293b">'+(e.implementation?esc(e.implementation):'')+'</td><td style="font-size:6pt;color:#1e293b">'+(e.comment?esc(e.comment):'')+'</td></tr>';
                 if(e.alternative)d+='<tr style="background:#fef2f2"><td colspan=9 style="border-left:2px solid #dc2626;font-size:6pt"><b>Alternative:</b> '+esc(e.alternative)+'</td></tr>';
-                if(e.newUnderstanding)d+='<tr style="background:#eff6ff"><td colspan=9 style="border-left:2px solid #3b82f6;font-size:6pt"><b>Neues Verständnis (AdvDev):</b> '+esc(e.newUnderstanding)+'</td></tr>';
-                if(e.advGen4)d+='<tr style="background:#faf5ff"><td colspan=9 style="border-left:2px solid #a78bfa;font-size:6pt"><b>AdvDev Gen4 Ziel:</b> '+esc(e.advGen4)+'</td></tr>';
-                if(e.advCriterion)d+='<tr style="background:#faf5ff"><td colspan=9 style="border-left:2px solid #a78bfa;font-size:6pt"><b>AdvDev Kriterium:</b> '+esc(e.advCriterion)+'</td></tr>';
-                if(e.advDecision)d+='<tr style="background:#faf5ff"><td colspan=9 style="border-left:2px solid #a78bfa;font-size:6pt"><b>AdvDev Entscheidung:</b> '+(e.advDecision==='accepted'?'Akzeptiert':e.advDecision==='rework'?'Überarbeiten':'Abgelehnt')+'</td></tr>';
+                if(e.newUnderstanding)d+='<tr style="background:#f0fdf4"><td colspan=9 style="border-left:2px solid #166534;font-size:6pt"><b>Neues Verständnis (AdvDev):</b> '+esc(e.newUnderstanding)+'</td></tr>';
+                if(e.advGen4)d+='<tr style="background:#fef2f2"><td colspan=9 style="border-left:2px solid #991b1b;font-size:6pt"><b>AdvDev Gen4 Ziel:</b> '+esc(e.advGen4)+'</td></tr>';
+                if(e.advCriterion)d+='<tr style="background:#fef2f2"><td colspan=9 style="border-left:2px solid #991b1b;font-size:6pt"><b>AdvDev Kriterium:</b> '+esc(e.advCriterion)+'</td></tr>';
+                if(e.advDecision)d+='<tr style="background:#fef2f2"><td colspan=9 style="border-left:2px solid #991b1b;font-size:6pt"><b>AdvDev Entscheidung:</b> '+(e.advDecision==='accepted'?'Akzeptiert':e.advDecision==='rework'?'Überarbeiten':'Abgelehnt')+'</td></tr>';
               });
               d+='</table>';
             });
@@ -468,10 +468,10 @@ function App(){
                 o+='<tr style="'+rowBg+'"><td><b>'+esc(it.id)+'</b></td><td>'+esc(it.requirement.substring(0,80))+'</td><td>'+esc(it.criterion||'')+'</td><td>'+(it.gen4?esc(it.gen4):'')+'</td><td>'+(e.prio||it.prio||'-')+'</td><td>'+dec+'</td>';
                 o+='<td style="font-size:6.5pt;color:#1e293b">'+(e.assumption?esc(e.assumption):'')+'</td><td style="font-size:6.5pt;color:#1e293b">'+(e.implementation?esc(e.implementation):'')+'</td><td style="font-size:6.5pt;color:#1e293b">'+(e.comment?esc(e.comment):'')+'</td></tr>';
                 if(e.alternative)o+='<tr style="background:#fef2f2"><td colspan=9 style="border-left:2px solid #dc2626;font-size:6.5pt"><b>Alternative:</b> '+esc(e.alternative)+'</td></tr>';
-                if(e.newUnderstanding)o+='<tr style="background:#eff6ff"><td colspan=9 style="border-left:2px solid #3b82f6;font-size:6.5pt"><b>Neues Verständnis (AdvDev):</b> '+esc(e.newUnderstanding)+'</td></tr>';
-                if(e.advGen4)o+='<tr style="background:#faf5ff"><td colspan=9 style="border-left:2px solid #a78bfa;font-size:6.5pt"><b>AdvDev Gen4 Ziel:</b> '+esc(e.advGen4)+'</td></tr>';
-                if(e.advCriterion)o+='<tr style="background:#faf5ff"><td colspan=9 style="border-left:2px solid #a78bfa;font-size:6.5pt"><b>AdvDev Kriterium:</b> '+esc(e.advCriterion)+'</td></tr>';
-                if(e.advDecision)o+='<tr style="background:#faf5ff"><td colspan=9 style="border-left:2px solid #a78bfa;font-size:6.5pt"><b>AdvDev Entscheidung:</b> '+(e.advDecision==='accepted'?'Akzeptiert':e.advDecision==='rework'?'Überarbeiten':'Abgelehnt')+'</td></tr>';
+                if(e.newUnderstanding)o+='<tr style="background:#f0fdf4"><td colspan=9 style="border-left:2px solid #166534;font-size:6.5pt"><b>Neues Verständnis (AdvDev):</b> '+esc(e.newUnderstanding)+'</td></tr>';
+                if(e.advGen4)o+='<tr style="background:#fef2f2"><td colspan=9 style="border-left:2px solid #991b1b;font-size:6.5pt"><b>AdvDev Gen4 Ziel:</b> '+esc(e.advGen4)+'</td></tr>';
+                if(e.advCriterion)o+='<tr style="background:#fef2f2"><td colspan=9 style="border-left:2px solid #991b1b;font-size:6.5pt"><b>AdvDev Kriterium:</b> '+esc(e.advCriterion)+'</td></tr>';
+                if(e.advDecision)o+='<tr style="background:#fef2f2"><td colspan=9 style="border-left:2px solid #991b1b;font-size:6.5pt"><b>AdvDev Entscheidung:</b> '+(e.advDecision==='accepted'?'Akzeptiert':e.advDecision==='rework'?'Überarbeiten':'Abgelehnt')+'</td></tr>';
               });
               o+='</table>';return o;
             }
@@ -553,6 +553,94 @@ function App(){
             var b=new Blob([csv],{type:'text/csv;charset=utf-8'});
             var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='4NE1-Dashboard-'+new Date().toISOString().split('T')[0]+'.csv';a.click();
           },style:{background:'#334155',color:'#94a3b8',border:'none',borderRadius:6,padding:'6px 10px',cursor:'pointer',fontSize:11}},'Export CSV'),
+          h('button',{onClick:function(){
+            // PDF Historie: Pre-Series + AdvDev side by side with color coding
+            var esc=function(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')};
+            var date=new Date().toISOString().split('T')[0];var pw=window.open('','_blank');
+            var css='@page{size:A4 landscape;margin:1.2cm}body{font-family:Calibri;font-size:8pt;color:#1B2E45}h1{color:#1F3864;font-size:13pt;page-break-before:always;border-bottom:2px solid #2F5496;padding-bottom:2pt}h1:first-of-type{page-break-before:auto}table{border-collapse:collapse;width:100%;margin:4px 0;font-size:7pt}th{background:#2F5496;color:white;padding:2px 4px}td{border:1px solid #d1d5db;padding:2px 4px;vertical-align:top;color:#2F5496}.ps{background:#f0fdf4;border-left:3px solid #166534}.ad{background:#fef2f2;border-left:3px solid #991b1b}.a{color:#16a34a;font-weight:bold}.r{color:#dc2626;font-weight:bold}.tbd{background:#ffff00;color:#cc0000;font-weight:bold;padding:0 2px}.meta{color:#64748b;font-size:7pt;font-style:italic}';
+            var d='<html><head><meta charset="utf-8"><style>'+css+'</style></head><body>';
+            d+='<h1 style="page-break-before:auto;text-align:center;font-size:16pt;border:none">4NE-1 Gen4 — Review Historie</h1>';
+            d+='<p style="text-align:center" class="meta">'+date+' | Pre-Series + AdvDev Übersicht</p>';
+            var byChapter={};items.forEach(function(it){var e=edits[it.id]||{};var ch=e.chapter||it.chapter;if(!byChapter[ch])byChapter[ch]=[];byChapter[ch].push(it)});
+            Object.keys(byChapter).sort().forEach(function(ch){
+              var list=byChapter[ch];
+              d+='<h1>'+esc(ch)+' ('+list.length+')</h1>';
+              d+='<table><tr><th>ID</th><th>Requirement</th><th>Stufe</th><th>Gen4 Ziel</th><th>Kriterium</th><th>Entscheidung</th><th>Details</th></tr>';
+              list.forEach(function(it){
+                var e=edits[it.id]||{};
+                var psDec=e.decision==='accepted'?'✓ Akzeptiert':e.decision==='conditional'?'⏳ In Arbeit':e.decision==='rejected'?'✗ Abgelehnt':'○ Offen';
+                d+='<tr class="ps"><td rowspan="2"><b>'+esc(it.id)+'</b></td><td rowspan="2" style="font-size:6.5pt">'+esc(it.requirement.substring(0,80))+'</td>';
+                d+='<td style="color:#166534;font-weight:bold">Pre-Series</td>';
+                d+='<td>'+(it.gen4?esc(it.gen4):'<span class="tbd">[TBD]</span>')+'</td>';
+                d+='<td>'+esc(it.criterion||'')+'</td>';
+                d+='<td>'+psDec+'</td>';
+                var psDetails=[];
+                if(e.assumption)psDetails.push('<b>Annahme:</b> '+esc(e.assumption));
+                if(e.implementation)psDetails.push('<b>Umsetzung:</b> '+esc(e.implementation));
+                if(e.comment)psDetails.push('<b>Kommentar:</b> '+esc(e.comment));
+                if(e.alternative)psDetails.push('<b>Alternative:</b> '+esc(e.alternative));
+                d+='<td style="font-size:6pt">'+(psDetails.length?psDetails.join('<br>'):'')+'</td></tr>';
+                var advDec=e.advDecision==='accepted'?'✓ Akzeptiert (PS übernommen)':e.advDecision==='rework'?'↻ Überarbeiten':e.advDecision==='rejected'?'✗ Abgelehnt (Original bleibt)':'';
+                d+='<tr class="ad">';
+                d+='<td style="color:#991b1b;font-weight:bold">AdvDev</td>';
+                d+='<td>'+(e.advGen4?esc(e.advGen4):'—')+'</td>';
+                d+='<td>'+(e.advCriterion?esc(e.advCriterion):'—')+'</td>';
+                d+='<td>'+(advDec||'○ Offen')+'</td>';
+                var adDetails=[];
+                if(e.newUnderstanding)adDetails.push('<b>Neues Verständnis:</b> '+esc(e.newUnderstanding));
+                d+='<td style="font-size:6pt">'+(adDetails.length?adDetails.join('<br>'):'')+'</td></tr>';
+              });
+              d+='</table>';
+            });
+            d+='</body></html>';pw.document.write(d);pw.document.close();setTimeout(function(){pw.print()},500);
+          },style:{background:'#166534',color:'white',border:'none',borderRadius:6,padding:'8px 16px',cursor:'pointer',fontSize:14,fontWeight:600}},'PDF Historie'),
+          h('button',{onClick:function(){
+            // PDF Final: resolved state of each requirement
+            var esc=function(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')};
+            var date=new Date().toISOString().split('T')[0];var pw=window.open('','_blank');
+            var css='@page{size:A4;margin:1.5cm}body{font-family:Calibri;font-size:9pt;color:#1B2E45;line-height:1.4}h1{color:#1F3864;font-size:14pt;page-break-before:always;border-bottom:2px solid #2F5496;padding-bottom:3pt}h1:first-of-type{page-break-before:auto}table{border-collapse:collapse;width:100%;margin:6px 0;font-size:7.5pt}th{background:#2F5496;color:white;padding:3px 5px}td{border:1px solid #d1d5db;padding:3px 5px;vertical-align:top;color:#2F5496}.a{color:#16a34a;font-weight:bold}.r{color:#dc2626;font-weight:bold}.w{color:#ca8a04;font-weight:bold}.tbd{background:#ffff00;color:#cc0000;font-weight:bold;padding:0 2px}.meta{color:#64748b;font-size:7.5pt;font-style:italic}.sig{border-bottom:1px solid #000;width:160px;display:inline-block;margin-top:20px}.src-ps{color:#166534;font-size:6pt;font-weight:bold}.src-ad{color:#991b1b;font-size:6pt;font-weight:bold}.src-orig{color:#64748b;font-size:6pt;font-weight:bold}';
+            var d='<html><head><meta charset="utf-8"><style>'+css+'</style></head><body>';
+            d+='<h1 style="page-break-before:auto;text-align:center;font-size:18pt;border:none">4NE-1 Gen4 — Final Requirements</h1>';
+            d+='<p style="text-align:center" class="meta">'+date+' | Aufgelöster Stand nach Pre-Series + AdvDev Review</p>';
+            var nAcc=0,nRew=0,nRej=0,nOpen=0;
+            items.forEach(function(it){var e=edits[it.id]||{};if(e.advDecision==='accepted')nAcc++;else if(e.advDecision==='rework')nRew++;else if(e.advDecision==='rejected')nRej++;else nOpen++});
+            d+='<p style="text-align:center" class="meta">'+items.length+' Requirements | '+nAcc+' akzeptiert (PS) | '+nRew+' überarbeiten | '+nRej+' abgelehnt (Original) | '+nOpen+' offen</p>';
+            d+='<p style="text-align:center;font-size:7pt;color:#94a3b8">Quelle: <span class="src-ps">[PS]</span> = Pre-Series | <span class="src-ad">[AD]</span> = AdvDev | <span class="src-orig">[ORIG]</span> = Original</p>';
+            var byChapter={};items.forEach(function(it){var e=edits[it.id]||{};var ch=e.chapter||it.chapter;if(!byChapter[ch])byChapter[ch]=[];byChapter[ch].push(it)});
+            Object.keys(byChapter).sort().forEach(function(ch){
+              var list=byChapter[ch];
+              d+='<h1>'+esc(ch)+' ('+list.length+')</h1>';
+              d+='<table><tr><th>ID</th><th>Requirement</th><th>Gen4 Ziel (Final)</th><th>Kriterium (Final)</th><th>Prio</th><th>Status</th><th>Quelle</th></tr>';
+              list.forEach(function(it){
+                var e=edits[it.id]||{};
+                var finalGen4,finalCrit,source,statusLabel,statusClass;
+                if(e.advDecision==='accepted'){
+                  finalGen4=it.gen4||'';finalCrit=it.criterion||'';source='PS';statusLabel='✓ Akzeptiert';statusClass='a';
+                } else if(e.advDecision==='rework'){
+                  finalGen4=e.advGen4||it.gen4||'';finalCrit=e.advCriterion||it.criterion||'';source=e.advGen4||e.advCriterion?'AD':'PS';statusLabel='↻ Überarbeiten';statusClass='w';
+                } else if(e.advDecision==='rejected'){
+                  finalGen4=it.gen4||'';finalCrit=it.criterion||'';source='ORIG';statusLabel='✗ Abgelehnt';statusClass='r';
+                } else {
+                  finalGen4=e.advGen4||it.gen4||'';finalCrit=e.advCriterion||it.criterion||'';source=e.advGen4||e.advCriterion?'AD':it.gen4?'PS':'ORIG';statusLabel='○ Offen';statusClass='';
+                }
+                var srcSpan=source==='PS'?'<span class="src-ps">[PS]</span>':source==='AD'?'<span class="src-ad">[AD]</span>':'<span class="src-orig">[ORIG]</span>';
+                var rowBg=statusClass==='a'?'background:#f0fdf4':statusClass==='w'?'background:#fefce8':statusClass==='r'?'background:#fef2f2':'';
+                d+='<tr style="'+rowBg+'"><td><b>'+esc(it.id)+'</b></td>';
+                d+='<td style="font-size:6.5pt">'+esc(it.requirement.substring(0,80))+'</td>';
+                d+='<td>'+(finalGen4?esc(finalGen4):'<span class="tbd">[TBD]</span>')+'</td>';
+                d+='<td>'+esc(finalCrit)+'</td>';
+                d+='<td>'+(e.prio||it.prio||'-')+'</td>';
+                d+='<td><span class="'+statusClass+'">'+statusLabel+'</span></td>';
+                d+='<td>'+srcSpan+'</td></tr>';
+              });
+              d+='</table>';
+            });
+            d+='<h1>Freigabe</h1><p>'+date+' | Final-Stand nach Pre-Series und AdvDev Review</p><br>';
+            d+='<table style="border:none;width:100%"><tr><td style="border:none;padding:12px;width:50%"><b>Leiter BU 4NE-1</b><br><br><span class="sig">&nbsp;</span><br><small>Name, Datum</small></td><td style="border:none;padding:12px"><b>Head of Advanced Development</b><br><br><span class="sig">&nbsp;</span><br><small>Name, Datum</small></td></tr>';
+            d+='<tr><td style="border:none;padding:12px"><b>Leiter 4NE-1 Pre-Series</b><br><br><span class="sig">&nbsp;</span><br><small>Name, Datum</small></td><td style="border:none;padding:12px"><b>Leiter 4NE-1 Series Development</b><br><br><span class="sig">&nbsp;</span><br><small>Name, Datum</small></td></tr>';
+            d+='<tr><td style="border:none;padding:12px" colspan=2><b>Head of Value Stream</b><br><br><span class="sig">&nbsp;</span><br><small>Name, Datum</small></td></tr></table>';
+            d+='</body></html>';pw.document.write(d);pw.document.close();setTimeout(function(){pw.print()},500);
+          },style:{background:'#991b1b',color:'white',border:'none',borderRadius:6,padding:'8px 16px',cursor:'pointer',fontSize:14,fontWeight:600}},'PDF Final'),
           h('button',{onClick:function(){
             var inp=document.createElement('input');inp.type='file';inp.accept='.csv,.tsv,.json';
             inp.onchange=function(ev){
@@ -796,56 +884,56 @@ function App(){
                       style:{padding:'6px 14px',borderRadius:6,fontSize:13,fontWeight:700,border:'2px solid '+advStatusColor,background:advStatus==='done'?'#f0fdf4':advStatus==='edited'?'#fefce8':'white',color:advStatusColor,cursor:'pointer'}},
                       h('option',{value:''},'Offen'),h('option',{value:'edited'},'Bearbeitet'),h('option',{value:'done'},'Fertig'))
                   ),
-                  h('div',{style:{background:'#f1f5f9',borderRadius:8,border:'2px solid #cbd5e1',padding:16,marginBottom:16}},
-                    h('div',{style:{fontSize:13,fontWeight:700,color:'#64748b',marginBottom:10,textTransform:'uppercase',letterSpacing:1}},'Pre-Series Bewertung'),
+                  h('div',{style:{background:'#f0fdf4',borderRadius:8,border:'2px solid #166534',padding:16,marginBottom:16}},
+                    h('div',{style:{fontSize:15,fontWeight:700,color:'#166534',marginBottom:10,textTransform:'uppercase',letterSpacing:1}},'PRE-SERIES BEWERTUNG'),
                     h('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10,marginBottom:12}},
-                      item.gen4?h('div',{style:{background:'#e8eef6',borderRadius:6,padding:'12px 16px'}},
-                        h('div',{style:{fontSize:9,color:'#475569',fontWeight:600}},'GEN4 ZIEL (Pre-Series)'),
-                        h('div',{style:{fontSize:18,color:'#1e293b',fontWeight:700}},tr(item,'g4'))):null,
-                      item.criterion?h('div',{style:{background:'#e8eef6',borderRadius:6,padding:'12px 16px'}},
-                        h('div',{style:{fontSize:9,color:'#475569',fontWeight:600}},'KRITERIUM (Pre-Series)'),
-                        h('div',{style:{fontSize:16,color:'#1e293b',fontWeight:600}},tr(item,'cr'))):null,
-                      h('div',{style:{background:'#e8eef6',borderRadius:6,padding:'12px 16px'}},
-                        h('div',{style:{fontSize:9,color:'#475569',fontWeight:600}},'ENTSCHEIDUNG (Pre-Series)'),
-                        h('div',{style:{fontSize:16,fontWeight:700,color:e.decision==='conditional'?'#ca8a04':'#dc2626'}},e.decision==='conditional'?'\u23f3 In Arbeit':'\u2717 Abgelehnt'))
+                      item.gen4?h('div',{style:{background:'#dcfce7',borderRadius:6,padding:'12px 16px'}},
+                        h('div',{style:{fontSize:11,color:'#166534',fontWeight:600}},'GEN4 ZIEL (Pre-Series)'),
+                        h('div',{style:{fontSize:22,color:'#1e293b',fontWeight:700}},tr(item,'g4'))):null,
+                      item.criterion?h('div',{style:{background:'#dcfce7',borderRadius:6,padding:'12px 16px'}},
+                        h('div',{style:{fontSize:11,color:'#166534',fontWeight:600}},'KRITERIUM (Pre-Series)'),
+                        h('div',{style:{fontSize:20,color:'#1e293b',fontWeight:600}},tr(item,'cr'))):null,
+                      h('div',{style:{background:'#dcfce7',borderRadius:6,padding:'12px 16px'}},
+                        h('div',{style:{fontSize:11,color:'#166534',fontWeight:600}},'ENTSCHEIDUNG (Pre-Series)'),
+                        h('div',{style:{fontSize:20,fontWeight:700,color:e.decision==='conditional'?'#ca8a04':'#dc2626'}},e.decision==='conditional'?'\u23f3 In Arbeit':'\u2717 Abgelehnt'))
                     ),
                     ['assumption','implementation','comment','alternative'].map(function(field){
                       var labels={assumption:'Annahme',implementation:'Umsetzung',comment:'Kommentar',alternative:'Begr\u00fcndung / Alternative'};
                       if(!e[field])return null;
                       return h('div',{key:'ps-'+field,style:{marginBottom:6}},
-                        h('div',{style:{fontSize:9,color:'#64748b',fontWeight:600}},labels[field]+' (Pre-Series)'),
-                        h('div',{style:{fontSize:14,color:'#334155',background:'#e8eef6',borderRadius:4,padding:'6px 10px',lineHeight:1.4,whiteSpace:'pre-wrap'}},e[field])
+                        h('div',{style:{fontSize:11,color:'#166534',fontWeight:600}},labels[field]+' (Pre-Series)'),
+                        h('div',{style:{fontSize:16,color:'#334155',background:'#dcfce7',borderRadius:4,padding:'6px 10px',lineHeight:1.4,whiteSpace:'pre-wrap'}},e[field])
                       );
                     })
                   ),
-                  h('div',{style:{background:'#faf5ff',borderRadius:8,border:'2px solid #a78bfa',padding:16}},
-                    h('div',{style:{fontSize:13,fontWeight:700,color:'#7c3aed',marginBottom:10,textTransform:'uppercase',letterSpacing:1}},'AdvDev Antwort'),
+                  h('div',{style:{background:'#fef2f2',borderRadius:8,border:'2px solid #991b1b',padding:16}},
+                    h('div',{style:{fontSize:13,fontWeight:700,color:'#991b1b',marginBottom:10,textTransform:'uppercase',letterSpacing:1}},'AdvDev Antwort'),
                     h('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:12}},
                       h('div',null,
-                        h('label',{style:{fontSize:10,fontWeight:600,color:e.advGen4?'#7c3aed':'#94a3b8',display:'block',marginBottom:3}},'Neues Gen4 Ziel'),
+                        h('label',{style:{fontSize:10,fontWeight:600,color:e.advGen4?'#991b1b':'#94a3b8',display:'block',marginBottom:3}},'Neues Gen4 Ziel'),
                         h('textarea',{value:e.advGen4||'',onChange:function(ev){upd(item.id,'advGen4',ev.target.value)},placeholder:item.gen4?'Eigener Vorschlag (Pre-Series: '+item.gen4+')':'Eigenes Gen4 Ziel...',rows:2,
-                          style:{width:'100%',borderRadius:6,border:'2px solid '+(e.advGen4?'#a78bfa':'#d8b4fe'),padding:'8px 12px',fontSize:16,resize:'vertical',background:e.advGen4?'#f5f0ff':'white'}})
+                          style:{width:'100%',borderRadius:6,border:'2px solid '+(e.advGen4?'#991b1b':'#fca5a5'),padding:'8px 12px',fontSize:16,resize:'vertical',background:e.advGen4?'#fef2f2':'white'}})
                       ),
                       h('div',null,
-                        h('label',{style:{fontSize:10,fontWeight:600,color:e.advCriterion?'#7c3aed':'#94a3b8',display:'block',marginBottom:3}},'Neues Kriterium'),
+                        h('label',{style:{fontSize:10,fontWeight:600,color:e.advCriterion?'#991b1b':'#94a3b8',display:'block',marginBottom:3}},'Neues Kriterium'),
                         h('textarea',{value:e.advCriterion||'',onChange:function(ev){upd(item.id,'advCriterion',ev.target.value)},placeholder:item.criterion?'Eigener Vorschlag (Pre-Series: '+item.criterion+')':'Eigenes Kriterium...',rows:2,
-                          style:{width:'100%',borderRadius:6,border:'2px solid '+(e.advCriterion?'#a78bfa':'#d8b4fe'),padding:'8px 12px',fontSize:16,resize:'vertical',background:e.advCriterion?'#f5f0ff':'white'}})
+                          style:{width:'100%',borderRadius:6,border:'2px solid '+(e.advCriterion?'#991b1b':'#fca5a5'),padding:'8px 12px',fontSize:16,resize:'vertical',background:e.advCriterion?'#fef2f2':'white'}})
                       )
                     ),
                     h('div',{style:{marginBottom:12}},
-                      h('label',{style:{fontSize:10,fontWeight:600,color:e.newUnderstanding?'#7c3aed':'#94a3b8',display:'block',marginBottom:3}},'Neues Verst\u00e4ndnis / Kommentar'),
+                      h('label',{style:{fontSize:10,fontWeight:600,color:e.newUnderstanding?'#991b1b':'#94a3b8',display:'block',marginBottom:3}},'Neues Verst\u00e4ndnis / Kommentar'),
                       h('textarea',{value:e.newUnderstanding||'',onChange:function(ev){upd(item.id,'newUnderstanding',ev.target.value)},placeholder:'Wie wird dieses Requirement verstanden? Reaktion / Vorschlag...',rows:3,
-                        style:{width:'100%',borderRadius:6,border:'2px solid '+(e.newUnderstanding?'#a78bfa':'#d8b4fe'),padding:'8px 12px',fontSize:16,resize:'vertical',background:e.newUnderstanding?'#f5f0ff':'white'}})
+                        style:{width:'100%',borderRadius:6,border:'2px solid '+(e.newUnderstanding?'#991b1b':'#fca5a5'),padding:'8px 12px',fontSize:16,resize:'vertical',background:e.newUnderstanding?'#fef2f2':'white'}})
                     ),
                     h('div',null,
-                      h('div',{style:{fontSize:10,fontWeight:600,color:'#7c3aed',marginBottom:6}},'ADVDEV ENTSCHEIDUNG'),
+                      h('div',{style:{fontSize:10,fontWeight:600,color:'#991b1b',marginBottom:6}},'ADVDEV ENTSCHEIDUNG'),
                       h('div',{style:{display:'flex',gap:6}},
                         h('button',{onClick:function(){upd(item.id,'advDecision',e.advDecision==='accepted'?'':'accepted')},
-                          style:{padding:'10px 20px',borderRadius:6,border:e.advDecision==='accepted'?'2px solid #16a34a':'1px solid #d1d5db',background:e.advDecision==='accepted'?'#f0fdf4':'white',color:e.advDecision==='accepted'?'#16a34a':'#64748b',fontSize:13,fontWeight:600,cursor:'pointer'}},'\u2713 Akzeptieren'),
+                          style:{padding:'10px 20px',borderRadius:6,border:e.advDecision==='accepted'?'2px solid #16a34a':'1px solid #d1d5db',background:e.advDecision==='accepted'?'#f0fdf4':'white',color:e.advDecision==='accepted'?'#16a34a':'#64748b',fontSize:13,fontWeight:600,cursor:'pointer'}},'\u2713 Akzeptieren (Pre-Series Vorschlag \u00fcbernehmen)'),
                         h('button',{onClick:function(){upd(item.id,'advDecision',e.advDecision==='rework'?'':'rework')},
-                          style:{padding:'10px 20px',borderRadius:6,border:e.advDecision==='rework'?'2px solid #f59e0b':'1px solid #d1d5db',background:e.advDecision==='rework'?'#fffbeb':'white',color:e.advDecision==='rework'?'#f59e0b':'#64748b',fontSize:13,fontWeight:600,cursor:'pointer'}},'\u21bb \u00dcberarbeiten'),
+                          style:{padding:'10px 20px',borderRadius:6,border:e.advDecision==='rework'?'2px solid #f59e0b':'1px solid #d1d5db',background:e.advDecision==='rework'?'#fffbeb':'white',color:e.advDecision==='rework'?'#f59e0b':'#64748b',fontSize:13,fontWeight:600,cursor:'pointer'}},'\u21bb \u00dcberarbeiten (an Pre-Series zur\u00fccksenden)'),
                         h('button',{onClick:function(){upd(item.id,'advDecision',e.advDecision==='rejected'?'':'rejected')},
-                          style:{padding:'10px 20px',borderRadius:6,border:e.advDecision==='rejected'?'2px solid #dc2626':'1px solid #d1d5db',background:e.advDecision==='rejected'?'#fef2f2':'white',color:e.advDecision==='rejected'?'#dc2626':'#64748b',fontSize:13,fontWeight:600,cursor:'pointer'}},'\u2717 Ablehnen')
+                          style:{padding:'10px 20px',borderRadius:6,border:e.advDecision==='rejected'?'2px solid #dc2626':'1px solid #d1d5db',background:e.advDecision==='rejected'?'#fef2f2':'white',color:e.advDecision==='rejected'?'#dc2626':'#64748b',fontSize:13,fontWeight:600,cursor:'pointer'}},'\u2717 Ablehnen (Urspr\u00fcngliches Requirement bleibt)')
                       )
                     )
                   )
@@ -906,14 +994,14 @@ function App(){
                       style:{width:'100%',borderRadius:6,border:'1px solid '+(isRequired&&!filled?'#dc2626':filled?'#86efac':'#fca5a5'),padding:6,fontSize:18,resize:'vertical',background:isRequired&&!filled?'#fef2f2':filled?'#fafffe':'#fffbfb'}})
                   );
                 }),
-                e.newUnderstanding||e.advGen4||e.advCriterion||e.advDecision?h('div',{key:'advdev-response',style:{marginTop:12,background:'#faf5ff',borderRadius:8,border:'2px solid #a78bfa',padding:'12px 16px'}},
-                  h('div',{style:{fontSize:12,fontWeight:700,color:'#7c3aed',marginBottom:8,textTransform:'uppercase',letterSpacing:1}},'AdvDev Antwort'),
+                e.newUnderstanding||e.advGen4||e.advCriterion||e.advDecision?h('div',{key:'advdev-response',style:{marginTop:12,background:'#fef2f2',borderRadius:8,border:'2px solid #991b1b',padding:'12px 16px'}},
+                  h('div',{style:{fontSize:12,fontWeight:700,color:'#991b1b',marginBottom:8,textTransform:'uppercase',letterSpacing:1}},'AdvDev Antwort'),
                   e.advDecision?h('div',{style:{marginBottom:8}},
-                    h('span',{style:{fontSize:12,fontWeight:700,padding:'4px 12px',borderRadius:4,background:e.advDecision==='accepted'?'#f0fdf4':e.advDecision==='rework'?'#fffbeb':'#fef2f2',color:e.advDecision==='accepted'?'#16a34a':e.advDecision==='rework'?'#f59e0b':'#dc2626',border:'1px solid '+(e.advDecision==='accepted'?'#86efac':e.advDecision==='rework'?'#fcd34d':'#fca5a5')}},e.advDecision==='accepted'?'\u2713 Akzeptiert':e.advDecision==='rework'?'\u21bb \u00dcberarbeiten':'\u2717 Abgelehnt')
+                    h('span',{style:{fontSize:12,fontWeight:700,padding:'4px 12px',borderRadius:4,background:e.advDecision==='accepted'?'#f0fdf4':e.advDecision==='rework'?'#fffbeb':'#fef2f2',color:e.advDecision==='accepted'?'#16a34a':e.advDecision==='rework'?'#f59e0b':'#dc2626',border:'1px solid '+(e.advDecision==='accepted'?'#86efac':e.advDecision==='rework'?'#fcd34d':'#fca5a5')}},e.advDecision==='accepted'?'\u2713 Akzeptiert (PS \u00fcbernommen)':e.advDecision==='rework'?'\u21bb \u00dcberarbeiten (zur\u00fcck an PS)':'\u2717 Abgelehnt (Original bleibt)')
                   ):null,
-                  e.advGen4?h('div',{style:{marginBottom:6}},h('div',{style:{fontSize:9,color:'#7c3aed',fontWeight:600}},'Neues Gen4 Ziel'),h('div',{style:{fontSize:14,color:'#4c1d95',lineHeight:1.3}},e.advGen4)):null,
-                  e.advCriterion?h('div',{style:{marginBottom:6}},h('div',{style:{fontSize:9,color:'#7c3aed',fontWeight:600}},'Neues Kriterium'),h('div',{style:{fontSize:14,color:'#4c1d95',lineHeight:1.3}},e.advCriterion)):null,
-                  e.newUnderstanding?h('div',null,h('div',{style:{fontSize:9,color:'#7c3aed',fontWeight:600}},'Neues Verst\u00e4ndnis'),h('div',{style:{fontSize:14,color:'#4c1d95',lineHeight:1.3,whiteSpace:'pre-wrap'}},e.newUnderstanding)):null
+                  e.advGen4?h('div',{style:{marginBottom:6}},h('div',{style:{fontSize:9,color:'#991b1b',fontWeight:600}},'Neues Gen4 Ziel'),h('div',{style:{fontSize:14,color:'#7f1d1d',lineHeight:1.3}},e.advGen4)):null,
+                  e.advCriterion?h('div',{style:{marginBottom:6}},h('div',{style:{fontSize:9,color:'#991b1b',fontWeight:600}},'Neues Kriterium'),h('div',{style:{fontSize:14,color:'#7f1d1d',lineHeight:1.3}},e.advCriterion)):null,
+                  e.newUnderstanding?h('div',null,h('div',{style:{fontSize:9,color:'#991b1b',fontWeight:600}},'Neues Verst\u00e4ndnis'),h('div',{style:{fontSize:14,color:'#7f1d1d',lineHeight:1.3,whiteSpace:'pre-wrap'}},e.newUnderstanding)):null
                 ):null
               ))
             ):null
