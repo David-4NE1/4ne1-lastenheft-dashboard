@@ -119,11 +119,10 @@ function App(){
     fetch(WORKER_URL+'/data',{signal:ctrl.signal,headers:{'X-API-Key':API_KEY}}).then(function(r){return r.json()}).then(function(remote){
       clearTimeout(tid);
       if(!remote||typeof remote!=='object')return;
-      var remoteKeys=Object.keys(remote);
-      if(remoteKeys.length===0)return;
       setEdits(function(local){
         var merged=Object.assign({},local);var changed=false;
-        remoteKeys.forEach(function(id){
+        var delta={};
+        Object.keys(remote).forEach(function(id){
           var rf=remote[id]||{};
           if(!merged[id])merged[id]={};
           Object.keys(rf).forEach(function(f){
@@ -133,17 +132,19 @@ function App(){
             }
           });
         });
-        Object.keys(local).forEach(function(id){
-          if(!remote[id]&&local[id]){
-            var lf=local[id];var hasContent=Object.keys(lf).some(function(f){return lf[f]!==undefined&&lf[f]!==''&&lf[f]!==null});
-            if(hasContent){
-              var pd=_pendingDelta.current;if(!pd[id])pd[id]={};
-              Object.keys(lf).forEach(function(f){if(lf[f]!==undefined&&lf[f]!==''&&lf[f]!==null){pd[id][f]=lf[f]}});
-              _hasPending.current=true;
+        Object.keys(merged).forEach(function(id){
+          var lf=merged[id];if(!lf)return;
+          var rf=remote[id]||{};
+          Object.keys(lf).forEach(function(f){
+            if(lf[f]!==undefined&&lf[f]!==''&&lf[f]!==null&&lf[f]!==rf[f]){
+              if(!delta[id])delta[id]={};
+              delta[id][f]=lf[f];
             }
-          }
+          });
         });
-        if(_hasPending.current){setTimeout(function(){_flushToServer()},2000)}
+        if(Object.keys(delta).length>0){
+          fetch(WORKER_URL+'/data',{method:'PATCH',headers:AUTH_HEADERS,body:JSON.stringify(delta)}).catch(function(){});
+        }
         if(changed){try{localStorage.setItem(SK,JSON.stringify(merged))}catch(e){}}
         return changed?merged:local;
       });
@@ -199,11 +200,12 @@ function App(){
   ue(function(){
     var iv=setInterval(function(){
       fetch(WORKER_URL+'/data',{headers:{'X-API-Key':API_KEY}}).then(function(r){return r.json()}).then(function(remote){
-        if(!remote||Object.keys(remote).length===0)return;
+        if(!remote||typeof remote!=='object')return;
         var dirty=_dirtyFields.current;
         setEdits(function(prev){
           var merged=Object.assign({},prev);
           var changed=false;
+          var delta={};
           Object.keys(remote).forEach(function(id){
             var rf=remote[id]||{};
             var lf=merged[id]||{};
@@ -217,6 +219,19 @@ function App(){
               }
             });
           });
+          Object.keys(merged).forEach(function(id){
+            var lf=merged[id];if(!lf)return;
+            var rf=remote[id]||{};
+            Object.keys(lf).forEach(function(f){
+              if(lf[f]!==undefined&&lf[f]!==''&&lf[f]!==null&&lf[f]!==rf[f]){
+                if(!delta[id])delta[id]={};
+                delta[id][f]=lf[f];
+              }
+            });
+          });
+          if(Object.keys(delta).length>0){
+            fetch(WORKER_URL+'/data',{method:'PATCH',headers:AUTH_HEADERS,body:JSON.stringify(delta)}).catch(function(){});
+          }
           if(changed){try{localStorage.setItem(SK,JSON.stringify(merged))}catch(e){}}
           return changed?merged:prev;
         });
