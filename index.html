@@ -9,6 +9,7 @@
 body{font-family:Inter,system-ui,sans-serif;background:#f8fafc}
 textarea,select,input,button{font-family:inherit}
 #error{color:red;padding:20px;font-size:14px;white-space:pre-wrap}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
 #loading{text-align:center;padding:60px;color:#64748b;font-size:16px}
 </style>
 </head>
@@ -101,6 +102,7 @@ function App(){
   var trChRev=function(ch){if(lang==='en')return CH_EN2DE[ch]||ch;return ch};
   var _ss=us('');var saveStatus=_ss[0];var setSaveStatus=_ss[1];
   var _ssTimer=uref(null);
+  var _hasPending=uref(false);
   var _bk=us(null);var backups=_bk[0];var setBackups=_bk[1];
   var focusIdx=um(function(){if(!expandedId||!filtered||!filtered.length)return -1;for(var fi=0;fi<filtered.length;fi++){if(filtered[fi].id===expandedId)return fi}return -1},[expandedId,filtered]);
   var _l=us(true);var loading=_l[0];var setLoading=_l[1];
@@ -161,23 +163,33 @@ function App(){
       keys.sort();while(keys.length>MAX_BACKUPS){localStorage.removeItem(keys.shift())}
     }catch(e){}
   };
+  var _flushToServer=uc(function(){
+    var delta=_pendingDelta.current;
+    if(Object.keys(delta).length===0){_hasPending.current=false;setSaveStatus('saved');if(_ssTimer.current)clearTimeout(_ssTimer.current);_ssTimer.current=setTimeout(function(){setSaveStatus('')},3000);return}
+    fetch(WORKER_URL+'/data',{method:'PATCH',headers:AUTH_HEADERS,body:JSON.stringify(delta)}).then(function(resp){if(!resp.ok)throw new Error(resp.status);_dirtyFields.current={};_pendingDelta.current={};_hasPending.current=false;setSaveStatus('saved');if(_ssTimer.current)clearTimeout(_ssTimer.current);_ssTimer.current=setTimeout(function(){setSaveStatus('')},3000)}).catch(function(){_hasPending.current=true;setSaveStatus('local')});
+  },[]);
   var save=uc(function(fullState){
     if(_saveTimer.current)clearTimeout(_saveTimer.current);
+    _hasPending.current=true;
     setSaveStatus('saving');
     _saveTimer.current=setTimeout(function(){
       try{localStorage.setItem(SK,JSON.stringify(fullState))}catch(e){}
       autoLocalBackup(fullState);
-      var delta=_pendingDelta.current;
-      if(Object.keys(delta).length>0){
-        fetch(WORKER_URL+'/data',{method:'PATCH',headers:AUTH_HEADERS,body:JSON.stringify(delta)}).then(function(resp){if(!resp.ok)throw new Error(resp.status);_dirtyFields.current={};_pendingDelta.current={};setSaveStatus('saved');if(_ssTimer.current)clearTimeout(_ssTimer.current);_ssTimer.current=setTimeout(function(){setSaveStatus('')},3000)}).catch(function(){setSaveStatus('local');if(_ssTimer.current)clearTimeout(_ssTimer.current);_ssTimer.current=setTimeout(function(){setSaveStatus('')},5000)});
-      }else{setSaveStatus('saved');if(_ssTimer.current)clearTimeout(_ssTimer.current);_ssTimer.current=setTimeout(function(){setSaveStatus('')},3000)}
-    },3000);
-  },[]);
+      _flushToServer();
+    },1000);
+  },[_flushToServer]);
   var upd=uc(function(id,field,value){
     var df=_dirtyFields.current;if(!df[id])df[id]={};df[id][field]=true;
     var pd=_pendingDelta.current;if(!pd[id])pd[id]={};pd[id][field]=value;
     setEdits(function(prev){var next=Object.assign({},prev);next[id]=Object.assign({},next[id]||{});next[id][field]=value;save(next);return next});
   },[save]);
+
+  ue(function(){
+    var onBeforeUnload=function(e){if(_hasPending.current){e.preventDefault();e.returnValue='';try{var d=_pendingDelta.current;if(Object.keys(d).length>0){navigator.sendBeacon(WORKER_URL+'/beacon','');var ls=localStorage.getItem(SK);if(ls)localStorage.setItem(SK,ls)};}catch(ex){}}};
+    window.addEventListener('beforeunload',onBeforeUnload);
+    var retryIv=setInterval(function(){if(_hasPending.current&&Object.keys(_pendingDelta.current).length>0){_flushToServer()}},15000);
+    return function(){window.removeEventListener('beforeunload',onBeforeUnload);clearInterval(retryIv)};
+  },[_flushToServer]);
 
   ue(function(){
     var iv=setInterval(function(){
@@ -782,7 +794,7 @@ function App(){
               alert('localStorage: '+count+' Items, '+filled+' Felder gefuellt.\n\nDies sind die Daten in DEINEM Browser (nicht auf dem Server).\nKlicke "Export CSV" um diese Daten zu sichern.');
             }catch(e){alert('localStorage leer oder nicht verfuegbar')}
           },style:{background:'#334155',color:'#94a3b8',border:'none',borderRadius:6,padding:'6px 10px',cursor:'pointer',fontSize:11}},'Local Data'),
-          saveStatus?h('span',{style:{fontSize:11,color:saveStatus==='error'?'#dc2626':saveStatus==='local'?'#ca8a04':saveStatus==='saving'?'#ca8a04':'#16a34a',fontWeight:600,marginLeft:4}},saveStatus==='saving'?t('saving'):saveStatus==='saved'?t('saved'):saveStatus==='local'?'Lokal gespeichert':saveStatus==='error'?'Error':''):null
+          saveStatus?h('span',{style:{fontSize:11,color:saveStatus==='error'?'#dc2626':saveStatus==='local'?'#dc2626':saveStatus==='saving'?'#ca8a04':'#16a34a',fontWeight:600,marginLeft:4,animation:saveStatus==='local'?'pulse 2s infinite':'none'}},saveStatus==='saving'?t('saving'):saveStatus==='saved'?t('saved'):saveStatus==='local'?'⚠ Nicht gespeichert — Retry in 15s':saveStatus==='error'?'Error':''):null
         )
       )
     ),
