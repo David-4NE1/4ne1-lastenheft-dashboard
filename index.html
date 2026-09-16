@@ -548,7 +548,7 @@ function App(){
           h('button',{onClick:function(){
             // CSV export (Excel-compatible with BOM for UTF-8)
             var sep='\t';
-            var rows=[['ID','Kapitel','Requirement','Kriterium','Gen4 Ziel','Prio (original)','Prio (neu)','Entscheidung','Annahme','Umsetzung','Kommentar','Alternative','Neues Verstaendnis','AdvDev Gen4 Ziel','AdvDev Kriterium','AdvDev Entscheidung','AdvDev Status','Hinweis','ZDF OK'].join(sep)];
+            var rows=[['ID','Kapitel','Requirement','Kriterium','Gen4 Ziel','Prio (original)','Prio (neu)','Entscheidung','Annahme','Umsetzung','Kommentar','Alternative','Neues Verstaendnis','AdvDev Gen4 Ziel','AdvDev Kriterium','AdvDev Entscheidung','AdvDev Status','PS Rueckmeldung','PS Kommentar','Hinweis','ZDF OK'].join(sep)];
             items.forEach(function(it){
               var e=edits[it.id]||{};
               var vals=[it.id,e.chapter||it.chapter,it.requirement.replace(/\t/g,' '),it.criterion.replace(/\t/g,' '),it.gen4,it.prio,e.prio||'',
@@ -558,6 +558,8 @@ function App(){
                 (e.advGen4||'').replace(/\t/g,' '),(e.advCriterion||'').replace(/\t/g,' '),
                 e.advDecision==='accepted'?'akzeptiert':e.advDecision==='rework'?'ueberarbeiten':e.advDecision==='rejected'?'abgelehnt':'',
                 e.advStatus==='done'?'fertig':e.advStatus==='edited'?'bearbeitet':'',
+                e.psResponse==='accepted'?'zustimmung':e.psResponse==='conditional'?'in_arbeit':e.psResponse==='rejected'?'abgelehnt':'',
+                (e.psResponseComment||'').replace(/\t/g,' '),
                 (e.hint!==undefined?e.hint:(it.hint||'')).replace(/\t/g,' '),e.zdfOk?'ja':''];
               rows.push(vals.join(sep));
             });
@@ -870,6 +872,54 @@ function App(){
             h('div',{style:{fontSize:13,color:'#991b1b',fontWeight:600}},'Antworten ausstehend')
           )
         ),
+        h('div',{style:{display:'flex',gap:8,marginBottom:16}},
+          h('button',{onClick:function(){
+            var esc=function(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')};
+            var date=new Date().toISOString().split('T')[0];var pw=window.open('','_blank');
+            var css='@page{size:A4 landscape;margin:1cm}body{font-family:Calibri;font-size:8pt;color:#1B2E45}h1{color:#1F3864;font-size:13pt;border-bottom:2px solid #2F5496;padding-bottom:2pt}table{border-collapse:collapse;width:100%;margin:6px 0;font-size:7pt}th{padding:3px 4px;color:white}td{border:1px solid #d1d5db;padding:3px 4px;vertical-align:top}.ps{background:#166534}.ad{background:#991b1b}.re{background:#1e40af}';
+            var d='<html><head><meta charset="utf-8"><style>'+css+'</style></head><body>';
+            d+='<h1 style="text-align:center;font-size:16pt">4NE-1 Gen4 — Rev-2 Komplettübersicht</h1>';
+            d+='<p style="text-align:center;color:#64748b;font-size:8pt">'+date+' | '+rev2Answered.length+' Antworten erhalten | '+rev2Pending.length+' ausstehend</p>';
+            d+='<table><tr><th class="ps">ID</th><th class="ps">Requirement</th><th class="ps">PS Gen4 Ziel</th><th class="ps">PS Kriterium</th><th class="ps">PS Entsch.</th><th class="ps">PS Begründung</th><th class="ad">AD Entsch.</th><th class="ad">AD Gen4 Ziel</th><th class="ad">AD Kriterium</th><th class="ad">AD Begründung</th><th class="re">PS Antwort</th><th class="re">PS Kommentar</th></tr>';
+            rev2Answered.concat(rev2Pending).forEach(function(it){
+              var e=edits[it.id]||{};
+              var psDec=e.decision==='conditional'?'⏳ In Arbeit':'✗ Abgelehnt';
+              var adDec=e.advDecision==='accepted'?'✓ Akzeptiert':e.advDecision==='rework'?'↻ Überarb.':e.advDecision==='rejected'?'✗ Abgelehnt':'—';
+              var psResp=e.psResponse==='accepted'?'✓ Zustimmung':e.psResponse==='conditional'?'⏳ In Arbeit':e.psResponse==='rejected'?'✗ Abgelehnt':'—';
+              d+='<tr><td><b>'+esc(it.id)+'</b></td><td>'+esc(it.requirement.substring(0,60))+'</td>';
+              d+='<td>'+esc(it.gen4||'')+'</td><td>'+esc(it.criterion||'')+'</td><td>'+psDec+'</td><td style="font-size:6pt">'+esc(e.alternative||'')+'</td>';
+              d+='<td style="background:'+(e.advDecision==='accepted'?'#f0fdf4':e.advDecision==='rework'?'#fffbeb':'#fef2f2')+'">'+adDec+'</td>';
+              d+='<td>'+esc(e.advGen4||'')+'</td><td>'+esc(e.advCriterion||'')+'</td><td style="font-size:6pt">'+esc(e.newUnderstanding||'')+'</td>';
+              d+='<td style="background:'+(e.psResponse==='accepted'?'#f0fdf4':e.psResponse==='conditional'?'#fefce8':e.psResponse==='rejected'?'#fef2f2':'white')+'">'+psResp+'</td>';
+              d+='<td style="font-size:6pt">'+esc(e.psResponseComment||'')+'</td></tr>';
+            });
+            d+='</table></body></html>';pw.document.write(d);pw.document.close();setTimeout(function(){pw.print()},500);
+          },style:{background:'#1e40af',color:'white',border:'none',borderRadius:6,padding:'8px 16px',cursor:'pointer',fontSize:13,fontWeight:600}},'📄 PDF Komplett'),
+          h('button',{onClick:function(){
+            var esc=function(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')};
+            var date=new Date().toISOString().split('T')[0];var pw=window.open('','_blank');
+            var openItems=rev2Answered.concat(rev2Pending).filter(function(it){var e=edits[it.id]||{};return !e.psResponse||e.psResponse==='conditional'||e.psResponse==='rejected'});
+            var css='@page{size:A4;margin:1.2cm}body{font-family:Calibri;font-size:8pt;color:#1B2E45}h1{color:#1F3864;font-size:13pt;border-bottom:2px solid #2F5496;padding-bottom:2pt}table{border-collapse:collapse;width:100%;margin:6px 0;font-size:7.5pt}th{background:#991b1b;color:white;padding:3px 4px}td{border:1px solid #d1d5db;padding:3px 4px;vertical-align:top}';
+            var d='<html><head><meta charset="utf-8"><style>'+css+'</style></head><body>';
+            d+='<h1 style="text-align:center;font-size:16pt">4NE-1 Gen4 — Offene Punkte (Rev-2)</h1>';
+            d+='<p style="text-align:center;color:#64748b;font-size:8pt">'+date+' | '+openItems.length+' offene Punkte</p>';
+            if(openItems.length===0){d+='<p style="text-align:center;color:#16a34a;font-size:12pt;margin-top:40px">✓ Keine offenen Punkte — alle Items abgestimmt!</p>';}
+            else{d+='<table><tr><th>ID</th><th>Requirement</th><th>PS Entscheidung</th><th>AdvDev Antwort</th><th>PS Rückmeldung</th><th>Status</th></tr>';
+            openItems.forEach(function(it){
+              var e=edits[it.id]||{};
+              var adDec=e.advDecision==='accepted'?'Akzeptiert':e.advDecision==='rework'?'Überarbeiten':e.advDecision==='rejected'?'Abgelehnt':'Ausstehend';
+              var psResp=e.psResponse==='conditional'?'In Arbeit':e.psResponse==='rejected'?'Abgelehnt':'Offen';
+              var status=!e.advDecision?'Warte auf AdvDev':!e.psResponse?'Warte auf PS':'Offen';
+              d+='<tr><td><b>'+esc(it.id)+'</b></td><td>'+esc(it.requirement.substring(0,80))+'</td>';
+              d+='<td>'+esc(e.decision==='conditional'?'In Arbeit':'Abgelehnt')+'</td>';
+              d+='<td>'+adDec+(e.advGen4?' | Neues Ziel: '+esc(e.advGen4):'')+(e.advCriterion?' | Neues Krit.: '+esc(e.advCriterion):'')+'</td>';
+              d+='<td>'+psResp+(e.psResponseComment?' — '+esc(e.psResponseComment):'')+'</td>';
+              d+='<td style="font-weight:bold;color:#991b1b">'+status+'</td></tr>';
+            });
+            d+='</table>';}
+            d+='</body></html>';pw.document.write(d);pw.document.close();setTimeout(function(){pw.print()},500);
+          },style:{background:'#991b1b',color:'white',border:'none',borderRadius:6,padding:'8px 16px',cursor:'pointer',fontSize:13,fontWeight:600}},'⚠ PDF Offene Punkte')
+        ),
         rev2Answered.length>0?h('div',{style:{marginBottom:24}},
           h('div',{style:{fontSize:16,fontWeight:700,color:'#166534',marginBottom:8,padding:'8px 14px',background:'#f0fdf4',borderRadius:6,borderLeft:'4px solid #166534'}},'✓ Erhaltene AdvDev-Antworten ('+rev2Answered.length+')'),
           h('div',{style:{display:'flex',flexDirection:'column',gap:4}},
@@ -878,17 +928,19 @@ function App(){
               var advLabel=e.advDecision==='accepted'?'✓ Akzeptiert (PS übernommen)':e.advDecision==='rework'?'↻ Überarbeiten (zurück an PS)':'✗ Abgelehnt (Original bleibt)';
               var advColor=e.advDecision==='accepted'?'#16a34a':e.advDecision==='rework'?'#f59e0b':'#dc2626';
               var advBg=e.advDecision==='accepted'?'#f0fdf4':e.advDecision==='rework'?'#fffbeb':'#fef2f2';
+              var psRespColor=e.psResponse==='accepted'?'#16a34a':e.psResponse==='conditional'?'#ca8a04':e.psResponse==='rejected'?'#dc2626':'#94a3b8';
+              var psRespLabel=e.psResponse==='accepted'?'✓ Zugestimmt':e.psResponse==='conditional'?'⏳ In Arbeit':e.psResponse==='rejected'?'✗ Abgelehnt':'Offen';
               var isExp=expandedId===item.id;
-              return h('div',{key:item.id,id:'card-'+item.id,style:{background:'white',borderRadius:8,border:'2px solid '+advColor,overflow:'hidden'}},
+              return h('div',{key:item.id,id:'card-'+item.id,style:{background:'white',borderRadius:8,border:'2px solid '+(e.psResponse?psRespColor:advColor),overflow:'hidden'}},
                 h('div',{onClick:function(){setExpandedId(isExp?null:item.id)},style:{display:'flex',alignItems:'center',gap:8,padding:'14px 20px',cursor:'pointer',userSelect:'none'}},
                   h('span',{style:{background:item.color,color:'white',fontSize:14,fontWeight:700,padding:'4px 10px',borderRadius:4,minWidth:65,textAlign:'center',flexShrink:0}},item.id),
                   h('span',{style:{fontSize:16,color:'#1e293b',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:isExp?'normal':'nowrap'}},tr(item,'r')),
                   h('span',{style:{fontSize:12,fontWeight:700,padding:'4px 12px',borderRadius:4,background:advBg,color:advColor,border:'1px solid '+advColor,flexShrink:0}},advLabel),
-                  e.advStatus?h('span',{style:{fontSize:10,fontWeight:600,padding:'2px 8px',borderRadius:3,background:e.advStatus==='done'?'#f0fdf4':'#fefce8',color:e.advStatus==='done'?'#16a34a':'#ca8a04',flexShrink:0}},e.advStatus==='done'?'Fertig':'Bearbeitet'):null,
+                  e.psResponse?h('span',{style:{fontSize:12,fontWeight:700,padding:'4px 12px',borderRadius:4,background:e.psResponse==='accepted'?'#f0fdf4':e.psResponse==='conditional'?'#fefce8':'#fef2f2',color:psRespColor,border:'1px solid '+psRespColor,flexShrink:0}},'PS: '+psRespLabel):null,
                   h('span',{style:{fontSize:16,color:'#94a3b8',transform:isExp?'rotate(180deg)':''}},'▾')
                 ),
-                isExp?h('div',{style:{padding:'16px 20px',borderTop:'2px solid '+advColor,background:'#fafbfc'}},
-                  h('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}},
+                isExp?h('div',{style:{padding:'16px 20px',borderTop:'2px solid '+(e.psResponse?psRespColor:advColor),background:'#fafbfc'}},
+                  h('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:16}},
                     h('div',{style:{background:'#f0fdf4',borderRadius:8,border:'2px solid #166534',padding:14}},
                       h('div',{style:{fontSize:13,fontWeight:700,color:'#166534',marginBottom:8,textTransform:'uppercase'}},'Pre-Series'),
                       item.gen4?h('div',{style:{marginBottom:6}},h('div',{style:{fontSize:10,color:'#166534',fontWeight:600}},'Gen4 Ziel'),h('div',{style:{fontSize:16,fontWeight:700,color:'#1e293b'}},tr(item,'g4'))):null,
@@ -902,6 +954,22 @@ function App(){
                       e.advGen4?h('div',{style:{marginTop:8,marginBottom:6}},h('div',{style:{fontSize:10,color:'#991b1b',fontWeight:600}},'Neues Gen4 Ziel'),h('div',{style:{fontSize:16,fontWeight:700,color:'#7f1d1d'}},e.advGen4)):null,
                       e.advCriterion?h('div',{style:{marginBottom:6}},h('div',{style:{fontSize:10,color:'#991b1b',fontWeight:600}},'Neues Kriterium'),h('div',{style:{fontSize:14,color:'#7f1d1d'}},e.advCriterion)):null,
                       e.newUnderstanding?h('div',null,h('div',{style:{fontSize:10,color:'#991b1b',fontWeight:600}},'Begründung / Kommentar'),h('div',{style:{fontSize:13,color:'#7f1d1d',whiteSpace:'pre-wrap'}},e.newUnderstanding)):null
+                    )
+                  ),
+                  h('div',{style:{background:'#eff6ff',borderRadius:8,border:'2px solid #1e40af',padding:14}},
+                    h('div',{style:{fontSize:13,fontWeight:700,color:'#1e40af',marginBottom:10,textTransform:'uppercase',letterSpacing:1}},'Pre-Series Rückmeldung (Rev-2)'),
+                    h('div',{style:{display:'flex',gap:6,marginBottom:10,flexWrap:'wrap'}},
+                      h('button',{onClick:function(){upd(item.id,'psResponse',e.psResponse==='accepted'?'':'accepted')},
+                        style:{padding:'10px 20px',borderRadius:6,border:e.psResponse==='accepted'?'2px solid #16a34a':'1px solid #d1d5db',background:e.psResponse==='accepted'?'#f0fdf4':'white',color:e.psResponse==='accepted'?'#16a34a':'#64748b',fontSize:13,fontWeight:600,cursor:'pointer'}},'✓ Zustimmen'),
+                      h('button',{onClick:function(){upd(item.id,'psResponse',e.psResponse==='conditional'?'':'conditional')},
+                        style:{padding:'10px 20px',borderRadius:6,border:e.psResponse==='conditional'?'2px solid #ca8a04':'1px solid #d1d5db',background:e.psResponse==='conditional'?'#fefce8':'white',color:e.psResponse==='conditional'?'#ca8a04':'#64748b',fontSize:13,fontWeight:600,cursor:'pointer'}},'⏳ In Arbeit'),
+                      h('button',{onClick:function(){upd(item.id,'psResponse',e.psResponse==='rejected'?'':'rejected')},
+                        style:{padding:'10px 20px',borderRadius:6,border:e.psResponse==='rejected'?'2px solid #dc2626':'1px solid #d1d5db',background:e.psResponse==='rejected'?'#fef2f2':'white',color:e.psResponse==='rejected'?'#dc2626':'#64748b',fontSize:13,fontWeight:600,cursor:'pointer'}},'✗ Ablehnen')
+                    ),
+                    h('div',null,
+                      h('label',{style:{fontSize:10,fontWeight:600,color:e.psResponseComment?'#1e40af':'#94a3b8',display:'block',marginBottom:3}},'Kommentar (optional)'),
+                      h('textarea',{value:e.psResponseComment||'',onChange:function(ev){upd(item.id,'psResponseComment',ev.target.value)},placeholder:'Optionaler Kommentar zur Rückmeldung...',rows:2,
+                        style:{width:'100%',borderRadius:6,border:'1px solid '+(e.psResponseComment?'#1e40af':'#d1d5db'),padding:'8px 12px',fontSize:14,resize:'vertical',background:e.psResponseComment?'#eff6ff':'white'}})
                     )
                   )
                 ):null
