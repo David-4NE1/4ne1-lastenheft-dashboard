@@ -78,8 +78,8 @@ var CHAPTERS=[...new Set(RAW.map(function(d){return d.ch}))].filter(Boolean).sor
 var PC={A:'#C0392B',B:'#B58900'};
 var SK='neura-4ne1-req-data';
 var WORKER_URL='https://4ne1-lastenheft-dashboard.david-rybinski.workers.dev';
-var SP_SAVE_URL='';
-var SP_LOAD_URL='';
+var SP_SAVE_URL='https://defaultdb8dccbcff284c4fa0be2f5e123840.e7.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/10/workflows/21b2f5229f954dd597004c21fc481321/triggers/manual/paths/invoke?api-version=1';
+var SP_LOAD_URL='https://defaultdb8dccbcff284c4fa0be2f5e123840.e7.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/03/workflows/57da2755cd4747009a4e9555cd6c55c9/triggers/manual/paths/invoke?api-version=1';
 var SP_SYNC_INTERVAL=1800000;
 var CH_DE2EN={"2.1.4 Verkleidung & Struktur":"2.1.4 Cover & Structure","2.1.5 Kinematik & Mechanik":"2.1.5 Kinematics & Mechanics","2.2 Sensorik & Perception":"2.2 Sensors & Perception","2.1.5 Fuss & Lokomotion":"2.1.5 Foot & Locomotion","2.3 Compute Architektur":"2.3 Compute Architecture","2.4 Netzwerk & TSN":"2.4 Network & TSN","2.5 Software & Steuerung":"2.5 Software & Control","2.8 Energie & Thermik":"2.8 Power & Thermal","2.7.3 E-Stop Konzept":"2.7.3 E-Stop Concept","2.12 Lieferant Leili":"2.12 Supplier Leili","6.5 Projekt-Risiken":"6.5 Project Risks","2.7 Safety & Compliance":"2.7 Safety & Compliance","2.1.4 Design Rules":"2.1.4 Design Rules","5. Testing & EOL":"5. Testing & EOL","7. Open Points":"7. Open Points","2.1 System Overview":"2.1 System Overview"};
 var CH_EN2DE={};Object.keys(CH_DE2EN).forEach(function(k){CH_EN2DE[CH_DE2EN[k]]=k});
