@@ -34,6 +34,7 @@ function checkPw(){
     document.getElementById('root').style.display='block';
     sessionStorage.setItem('4ne1-auth','ok');
     sessionStorage.setItem('4ne1-mode',pw==='ADVDEVGEN4'?'advdev':'review');
+    window.location.reload();return;
   } else {
     document.getElementById('pw-error').style.display='block';
   }
