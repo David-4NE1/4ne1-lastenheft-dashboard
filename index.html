@@ -87,6 +87,7 @@ function App(){
   var _f=us({chapter:'',prio:'',type:'',search:''});var filter=_f[0];var setFilter=_f[1];
   var _x=us(null);var expandedId=_x[0];var setExpandedId=_x[1];
   var _lang=us('de');var lang=_lang[0];var setLang=_lang[1];
+  var _rv=us('rev1');var revView=_rv[0];var setRevView=_rv[1];
   var isAdvDev=sessionStorage.getItem('4ne1-mode')==='advdev';
   var t=function(key){return(I18N[lang]||I18N.de)[key]||(I18N.de)[key]||key};
   var _fmap={r:'requirement',cr:'criterion',g4:'gen4'};
@@ -221,6 +222,13 @@ function App(){
     });
   },[items,filter,edits]);
 
+  var rev2Answered=um(function(){
+    return items.filter(function(item){var e=edits[item.id]||{};return(e.decision==='conditional'||e.decision==='rejected')&&!!e.advDecision});
+  },[items,edits]);
+  var rev2Pending=um(function(){
+    return items.filter(function(item){var e=edits[item.id]||{};return(e.decision==='conditional'||e.decision==='rejected')&&!e.advDecision});
+  },[items,edits]);
+
   var stats=um(function(){
     var total=items.length;
     var filled=items.filter(function(i){var e=edits[i.id]||{};return e.decision||e.assumption||e.implementation||e.comment}).length;
@@ -242,6 +250,10 @@ function App(){
           h('div',{style:{fontSize:16,color:'#94a3b8'}},stats.filled+' bearbeitet | '+stats.accepted+' \u2713 | '+stats.inProgress+' \u23f3 | '+stats.rejected+' \u2717 | '+(stats.total-stats.filled)+' offen')
         ),
         h('div',{style:{display:'flex',gap:10,alignItems:'center'}},
+          !isAdvDev?h('select',{value:revView,onChange:function(ev){setRevView(ev.target.value);setExpandedId(null)},
+            style:{padding:'8px 16px',borderRadius:8,fontSize:16,fontWeight:700,border:'2px solid '+(revView==='rev2'?'#991b1b':'#60e6a5'),background:revView==='rev2'?'#991b1b':'#1e293b',color:'white',cursor:'pointer'}},
+            h('option',{value:'rev1'},'Rev-1 (Aktuell)'),h('option',{value:'rev2'},'Rev-2 (AdvDev Antwort)')
+          ):null,
           h('div',{style:{background:'#1e293b',borderRadius:8,padding:'6px 14px',textAlign:'center'}},
             h('div',{style:{fontSize:28,fontWeight:700,color:'#60e6a5'}},stats.pct+'%')
           ),
@@ -834,10 +846,6 @@ function App(){
           style:{padding:'6px',borderRadius:6,border:'1px solid #d1d5db',fontSize:12,background:'white'}},
           h('option',{value:''},t('allPrios')),h('option',{value:'A'},'Prio A'),h('option',{value:'B'},'Prio B')
         ),
-        !isAdvDev&&stats.rev2>0?h('select',{value:filter.search==='_rev2_'?'_rev2_':'',onChange:function(ev){setFilter(ev.target.value?{chapter:'',prio:'',type:'',search:ev.target.value}:function(f){return Object.assign({},f,{search:''})})},
-          style:{padding:'6px',borderRadius:6,border:'1px solid '+(filter.search==='_rev2_'?'#7c3aed':'#d1d5db'),fontSize:12,background:filter.search==='_rev2_'?'#f5f3ff':'white',color:filter.search==='_rev2_'?'#7c3aed':'inherit',fontWeight:filter.search==='_rev2_'?600:'normal'}},
-          h('option',{value:''},'Ansicht'),h('option',{value:'_rev2_'},t('rev2')+' ('+stats.rev2+')')
-        ):null,
         h('button',{onClick:function(){setFilter(filter.search==='_unfilled_'?{chapter:'',prio:'',type:'',search:''}:{chapter:'',prio:'',type:'',search:'_unfilled_'})},
           style:{background:'#fef2f2',color:'#dc2626',border:'1px solid #fca5a5',borderRadius:6,padding:'6px 14px',cursor:'pointer',fontSize:14,fontWeight:600}},(stats.total-stats.filled)+' '+t('open')),
         h('button',{onClick:function(){setFilter(filter.search==='_filled_'?{chapter:'',prio:'',type:'',search:''}:{chapter:'',prio:'',type:'',search:'_filled_'})},
@@ -851,6 +859,72 @@ function App(){
         h('button',{onClick:function(){setFilter(filter.search==='_nozdf_'?{chapter:'',prio:'',type:'',search:''}:{chapter:'',prio:'',type:'',search:'_nozdf_'})},style:{background:'#fef2f2',color:'#dc2626',border:'1px solid #fca5a5',borderRadius:6,padding:'6px 14px',cursor:'pointer',fontSize:14,fontWeight:600}},items.filter(function(i){return i.zdf===0&&!(edits[i.id]||{}).zdfOk}).length+' '+t('zdfMissing')),
         h('button',{onClick:function(){setFilter(filter.search==='_tbd_'?{chapter:'',prio:'',type:'',search:''}:{chapter:'',prio:'',type:'',search:'_tbd_'})},style:{background:'#fefce8',color:'#ca8a04',border:'1px solid #fcd34d',borderRadius:6,padding:'6px 14px',cursor:'pointer',fontSize:14,fontWeight:600}},items.filter(function(i){return i.zdf===1&&!(edits[i.id]||{}).zdfOk}).length+' TBD'),filtered.length+' items')
       ),
+      !isAdvDev&&revView==='rev2'?h('div',{style:{paddingTop:8}},
+        h('div',{style:{display:'flex',gap:12,marginBottom:16}},
+          h('div',{style:{background:'#f0fdf4',border:'2px solid #166534',borderRadius:8,padding:'12px 20px',flex:1,textAlign:'center'}},
+            h('div',{style:{fontSize:28,fontWeight:700,color:'#166534'}},rev2Answered.length),
+            h('div',{style:{fontSize:13,color:'#166534',fontWeight:600}},'Antworten erhalten')
+          ),
+          h('div',{style:{background:'#fef2f2',border:'2px solid #991b1b',borderRadius:8,padding:'12px 20px',flex:1,textAlign:'center'}},
+            h('div',{style:{fontSize:28,fontWeight:700,color:'#991b1b'}},rev2Pending.length),
+            h('div',{style:{fontSize:13,color:'#991b1b',fontWeight:600}},'Antworten ausstehend')
+          )
+        ),
+        rev2Answered.length>0?h('div',{style:{marginBottom:24}},
+          h('div',{style:{fontSize:16,fontWeight:700,color:'#166534',marginBottom:8,padding:'8px 14px',background:'#f0fdf4',borderRadius:6,borderLeft:'4px solid #166534'}},'✓ Erhaltene AdvDev-Antworten ('+rev2Answered.length+')'),
+          h('div',{style:{display:'flex',flexDirection:'column',gap:4}},
+            rev2Answered.map(function(item){
+              var e=edits[item.id]||{};
+              var advLabel=e.advDecision==='accepted'?'✓ Akzeptiert (PS übernommen)':e.advDecision==='rework'?'↻ Überarbeiten (zurück an PS)':'✗ Abgelehnt (Original bleibt)';
+              var advColor=e.advDecision==='accepted'?'#16a34a':e.advDecision==='rework'?'#f59e0b':'#dc2626';
+              var advBg=e.advDecision==='accepted'?'#f0fdf4':e.advDecision==='rework'?'#fffbeb':'#fef2f2';
+              var isExp=expandedId===item.id;
+              return h('div',{key:item.id,id:'card-'+item.id,style:{background:'white',borderRadius:8,border:'2px solid '+advColor,overflow:'hidden'}},
+                h('div',{onClick:function(){setExpandedId(isExp?null:item.id)},style:{display:'flex',alignItems:'center',gap:8,padding:'14px 20px',cursor:'pointer',userSelect:'none'}},
+                  h('span',{style:{background:item.color,color:'white',fontSize:14,fontWeight:700,padding:'4px 10px',borderRadius:4,minWidth:65,textAlign:'center',flexShrink:0}},item.id),
+                  h('span',{style:{fontSize:16,color:'#1e293b',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:isExp?'normal':'nowrap'}},tr(item,'r')),
+                  h('span',{style:{fontSize:12,fontWeight:700,padding:'4px 12px',borderRadius:4,background:advBg,color:advColor,border:'1px solid '+advColor,flexShrink:0}},advLabel),
+                  e.advStatus?h('span',{style:{fontSize:10,fontWeight:600,padding:'2px 8px',borderRadius:3,background:e.advStatus==='done'?'#f0fdf4':'#fefce8',color:e.advStatus==='done'?'#16a34a':'#ca8a04',flexShrink:0}},e.advStatus==='done'?'Fertig':'Bearbeitet'):null,
+                  h('span',{style:{fontSize:16,color:'#94a3b8',transform:isExp?'rotate(180deg)':''}},'▾')
+                ),
+                isExp?h('div',{style:{padding:'16px 20px',borderTop:'2px solid '+advColor,background:'#fafbfc'}},
+                  h('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}},
+                    h('div',{style:{background:'#f0fdf4',borderRadius:8,border:'2px solid #166534',padding:14}},
+                      h('div',{style:{fontSize:13,fontWeight:700,color:'#166534',marginBottom:8,textTransform:'uppercase'}},'Pre-Series'),
+                      item.gen4?h('div',{style:{marginBottom:6}},h('div',{style:{fontSize:10,color:'#166534',fontWeight:600}},'Gen4 Ziel'),h('div',{style:{fontSize:16,fontWeight:700,color:'#1e293b'}},tr(item,'g4'))):null,
+                      item.criterion?h('div',{style:{marginBottom:6}},h('div',{style:{fontSize:10,color:'#166534',fontWeight:600}},'Kriterium'),h('div',{style:{fontSize:14,color:'#1e293b'}},tr(item,'cr'))):null,
+                      h('div',{style:{marginBottom:6}},h('div',{style:{fontSize:10,color:'#166534',fontWeight:600}},'Entscheidung'),h('div',{style:{fontSize:14,fontWeight:700,color:e.decision==='conditional'?'#ca8a04':'#dc2626'}},e.decision==='conditional'?'⏳ In Arbeit':'✗ Abgelehnt')),
+                      e.alternative?h('div',null,h('div',{style:{fontSize:10,color:'#166534',fontWeight:600}},'Begründung'),h('div',{style:{fontSize:13,color:'#334155',whiteSpace:'pre-wrap'}},e.alternative)):null
+                    ),
+                    h('div',{style:{background:'#fef2f2',borderRadius:8,border:'2px solid #991b1b',padding:14}},
+                      h('div',{style:{fontSize:13,fontWeight:700,color:'#991b1b',marginBottom:8,textTransform:'uppercase'}},'AdvDev Antwort'),
+                      h('div',{style:{marginBottom:6}},h('span',{style:{fontSize:13,fontWeight:700,padding:'4px 12px',borderRadius:4,background:advBg,color:advColor,border:'1px solid '+advColor}},advLabel)),
+                      e.advGen4?h('div',{style:{marginTop:8,marginBottom:6}},h('div',{style:{fontSize:10,color:'#991b1b',fontWeight:600}},'Neues Gen4 Ziel'),h('div',{style:{fontSize:16,fontWeight:700,color:'#7f1d1d'}},e.advGen4)):null,
+                      e.advCriterion?h('div',{style:{marginBottom:6}},h('div',{style:{fontSize:10,color:'#991b1b',fontWeight:600}},'Neues Kriterium'),h('div',{style:{fontSize:14,color:'#7f1d1d'}},e.advCriterion)):null,
+                      e.newUnderstanding?h('div',null,h('div',{style:{fontSize:10,color:'#991b1b',fontWeight:600}},'Begründung / Kommentar'),h('div',{style:{fontSize:13,color:'#7f1d1d',whiteSpace:'pre-wrap'}},e.newUnderstanding)):null
+                    )
+                  )
+                ):null
+              );
+            })
+          )
+        ):null,
+        rev2Pending.length>0?h('div',null,
+          h('div',{style:{fontSize:16,fontWeight:700,color:'#991b1b',marginBottom:8,padding:'8px 14px',background:'#fef2f2',borderRadius:6,borderLeft:'4px solid #991b1b'}},'⏳ Ausstehende Antworten ('+rev2Pending.length+')'),
+          h('div',{style:{display:'flex',flexDirection:'column',gap:4}},
+            rev2Pending.map(function(item){
+              var e=edits[item.id]||{};
+              return h('div',{key:item.id,style:{background:'#fff',borderRadius:8,border:'1px solid #fca5a5',padding:'14px 20px',display:'flex',alignItems:'center',gap:8}},
+                h('span',{style:{background:item.color,color:'white',fontSize:14,fontWeight:700,padding:'4px 10px',borderRadius:4,minWidth:65,textAlign:'center',flexShrink:0}},item.id),
+                h('span',{style:{fontSize:16,color:'#1e293b',flex:1}},tr(item,'r')),
+                h('span',{style:{fontSize:11,fontWeight:600,padding:'3px 10px',borderRadius:4,background:e.decision==='conditional'?'#fefce8':'#fef2f2',color:e.decision==='conditional'?'#ca8a04':'#dc2626',border:'1px solid '+(e.decision==='conditional'?'#fcd34d':'#fca5a5')}},e.decision==='conditional'?'⏳ In Arbeit':'✗ Abgelehnt'),
+                h('span',{style:{fontSize:11,color:'#991b1b',fontWeight:600}},'— Warte auf AdvDev')
+              );
+            })
+          )
+        ):null,
+        rev2Answered.length===0&&rev2Pending.length===0?h('div',{style:{textAlign:'center',padding:40,color:'#94a3b8'}},'Keine Items an AdvDev gesendet (keine Items mit Entscheidung "In Arbeit" oder "Abgelehnt")'):null
+      ):
       h('div',{style:{display:'flex',flexDirection:'column',gap:4,paddingTop:8}},
         filtered.map(function(item){
           var e=edits[item.id]||{};
