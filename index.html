@@ -89,6 +89,8 @@ function App(){
   var _lang=us('de');var lang=_lang[0];var setLang=_lang[1];
   var _rv=us('rev1');var revView=_rv[0];var setRevView=_rv[1];
   var isAdvDev=sessionStorage.getItem('4ne1-mode')==='advdev';
+  var _advF=us('all');var advFilter=_advF[0];var setAdvFilter=_advF[1];
+  var advDone=function(e){if(!e.advDecision)return false;if(e.advDecision==='accepted')return true;if(e.advDecision==='rejected')return !!e.newUnderstanding;if(e.advDecision==='rework')return !!(e.advGen4&&e.advCriterion&&e.newUnderstanding);return false};
   var t=function(key){return(I18N[lang]||I18N.de)[key]||(I18N.de)[key]||key};
   var _fmap={r:'requirement',cr:'criterion',g4:'gen4'};
   var tr=function(item,field){if(lang==='en'&&EN_TEXTS[item.id]&&EN_TEXTS[item.id][field])return EN_TEXTS[item.id][field];return item[_fmap[field]||field]};
@@ -207,6 +209,8 @@ function App(){
     return items.filter(function(item){
       var e=edits[item.id]||{};
       if(isAdvDev&&e.decision!=='conditional'&&e.decision!=='rejected')return false;
+      if(isAdvDev&&advFilter==='open'&&advDone(e))return false;
+      if(isAdvDev&&advFilter==='done'&&!advDone(e))return false;
       if(filter.chapter&&item.chapter!==filter.chapter)return false;
       if(filter.prio&&item.prio!==filter.prio)return false;
       if(filter.type&&item.type!==filter.type)return false;
@@ -220,7 +224,7 @@ function App(){
       if(filter.search){var s=filter.search.toLowerCase();return item.id.toLowerCase().indexOf(s)>=0||item.requirement.toLowerCase().indexOf(s)>=0}
       return true;
     });
-  },[items,filter,edits]);
+  },[items,filter,edits,advFilter]);
 
   var rev2Answered=um(function(){
     return items.filter(function(item){var e=edits[item.id]||{};return(e.decision==='conditional'||e.decision==='rejected')&&!!e.advDecision});
@@ -246,10 +250,14 @@ function App(){
       h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',maxWidth:1400,margin:'0 auto',gap:24}},
         h('div',{style:{flexShrink:0,minWidth:280}},
           h('div',{style:{fontSize:28,fontWeight:700}},isAdvDev?'4NE-1 Gen4 \u2014 AdvDev':'4NE-1 Gen4'),
-          isAdvDev?h('div',{style:{fontSize:16,color:'#f59e0b'}},(stats.inProgress+stats.rejected)+' Items ('+stats.inProgress+' \u23f3 In Arbeit | '+stats.rejected+' \u2717 Abgelehnt)'):
+          isAdvDev?(function(){var advItems=items.filter(function(i){var e=edits[i.id]||{};return e.decision==='conditional'||e.decision==='rejected'});var doneCount=advItems.filter(function(i){return advDone(edits[i.id]||{})}).length;var openCount=advItems.length-doneCount;return h('div',{style:{fontSize:16,color:'#f59e0b'}},advItems.length+' Items | '+doneCount+' \u2713 Bearbeitet | '+openCount+' Offen')})():
           h('div',{style:{fontSize:16,color:'#94a3b8'}},stats.filled+' bearbeitet | '+stats.accepted+' \u2713 | '+stats.inProgress+' \u23f3 | '+stats.rejected+' \u2717 | '+(stats.total-stats.filled)+' offen')
         ),
         h('div',{style:{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap',justifyContent:'flex-end'}},
+          isAdvDev?h('select',{value:advFilter,onChange:function(ev){setAdvFilter(ev.target.value);setExpandedId(null)},
+            style:{padding:'8px 16px',borderRadius:8,fontSize:16,fontWeight:700,border:'2px solid '+(advFilter==='done'?'#16a34a':advFilter==='open'?'#f59e0b':'#60e6a5'),background:advFilter==='done'?'#166534':advFilter==='open'?'#92400e':'#1e293b',color:'white',cursor:'pointer'}},
+            h('option',{value:'all'},'Alle'),h('option',{value:'open'},'Offen'),h('option',{value:'done'},'Bearbeitet')
+          ):null,
           !isAdvDev?h('select',{value:revView,onChange:function(ev){setRevView(ev.target.value);setExpandedId(null)},
             style:{padding:'8px 16px',borderRadius:8,fontSize:16,fontWeight:700,border:'2px solid '+(revView==='rev2'?'#991b1b':'#60e6a5'),background:revView==='rev2'?'#991b1b':'#1e293b',color:'white',cursor:'pointer'}},
             h('option',{value:'rev1'},'Rev-1 (Aktuell)'),h('option',{value:'rev2'},'Rev-2 (AdvDev Antwort)')
@@ -557,7 +565,7 @@ function App(){
                 (e.newUnderstanding||'').replace(/\t/g,' '),
                 (e.advGen4||'').replace(/\t/g,' '),(e.advCriterion||'').replace(/\t/g,' '),
                 e.advDecision==='accepted'?'akzeptiert':e.advDecision==='rework'?'ueberarbeiten':e.advDecision==='rejected'?'abgelehnt':'',
-                e.advStatus==='done'?'fertig':e.advStatus==='edited'?'bearbeitet':'',
+                advDone(e)?'bearbeitet':'offen',
                 e.psResponse==='accepted'?'zustimmung':e.psResponse==='conditional'?'in_arbeit':e.psResponse==='rejected'?'abgelehnt':'',
                 (e.psResponseComment||'').replace(/\t/g,' '),
                 (e.hint!==undefined?e.hint:(it.hint||'')).replace(/\t/g,' '),e.zdfOk?'ja':''];
@@ -1034,14 +1042,12 @@ function App(){
                 h('span',{style:{fontSize:18,color:'#1e293b',fontWeight:600,lineHeight:1.3}},tr(item,'r'))
               ),
               isAdvDev?(function(){
-                var advStatus=e.advStatus||'';
-                var advStatusColor=advStatus==='done'?'#16a34a':advStatus==='edited'?'#ca8a04':'#94a3b8';
-                var advStatusLabel=advStatus==='done'?'Fertig':advStatus==='edited'?'Bearbeitet':'Offen';
+                var isDone=advDone(e);
+                var advStatusColor=isDone?'#16a34a':'#94a3b8';
+                var advStatusLabel=isDone?'Bearbeitet':'Offen';
                 return h('div',null,
                   h('div',{style:{display:'flex',justifyContent:'flex-end',marginBottom:8}},
-                    h('select',{value:advStatus,onChange:function(ev){upd(item.id,'advStatus',ev.target.value)},
-                      style:{padding:'6px 14px',borderRadius:6,fontSize:13,fontWeight:700,border:'2px solid '+advStatusColor,background:advStatus==='done'?'#f0fdf4':advStatus==='edited'?'#fefce8':'white',color:advStatusColor,cursor:'pointer'}},
-                      h('option',{value:''},'Offen'),h('option',{value:'edited'},'Bearbeitet'),h('option',{value:'done'},'Fertig'))
+                    h('span',{style:{padding:'6px 14px',borderRadius:6,fontSize:13,fontWeight:700,border:'2px solid '+advStatusColor,background:isDone?'#f0fdf4':'white',color:advStatusColor}},advStatusLabel)
                   ),
                   h('div',{style:{background:'#f0fdf4',borderRadius:8,border:'2px solid #166534',padding:16,marginBottom:16}},
                     h('div',{style:{fontSize:15,fontWeight:700,color:'#166534',marginBottom:10,textTransform:'uppercase',letterSpacing:1}},'PRE-SERIES BEWERTUNG'),
