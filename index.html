@@ -78,9 +78,6 @@ var CHAPTERS=[...new Set(RAW.map(function(d){return d.ch}))].filter(Boolean).sor
 var PC={A:'#C0392B',B:'#B58900'};
 var SK='neura-4ne1-req-data';
 var WORKER_URL='https://4ne1-lastenheft-dashboard.david-rybinski.workers.dev';
-var SP_SAVE_URL='https://defaultdb8dccbcff284c4fa0be2f5e123840.e7.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/10/workflows/21b2f5229f954dd597004c21fc481321/triggers/manual/paths/invoke?api-version=1';
-var SP_LOAD_URL='https://defaultdb8dccbcff284c4fa0be2f5e123840.e7.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/03/workflows/57da2755cd4747009a4e9555cd6c55c9/triggers/manual/paths/invoke?api-version=1';
-var SP_SYNC_INTERVAL=1800000;
 var CH_DE2EN={"2.1.4 Verkleidung & Struktur":"2.1.4 Cover & Structure","2.1.5 Kinematik & Mechanik":"2.1.5 Kinematics & Mechanics","2.2 Sensorik & Perception":"2.2 Sensors & Perception","2.1.5 Fuss & Lokomotion":"2.1.5 Foot & Locomotion","2.3 Compute Architektur":"2.3 Compute Architecture","2.4 Netzwerk & TSN":"2.4 Network & TSN","2.5 Software & Steuerung":"2.5 Software & Control","2.8 Energie & Thermik":"2.8 Power & Thermal","2.7.3 E-Stop Konzept":"2.7.3 E-Stop Concept","2.12 Lieferant Leili":"2.12 Supplier Leili","6.5 Projekt-Risiken":"6.5 Project Risks","2.7 Safety & Compliance":"2.7 Safety & Compliance","2.1.4 Design Rules":"2.1.4 Design Rules","5. Testing & EOL":"5. Testing & EOL","7. Open Points":"7. Open Points","2.1 System Overview":"2.1 System Overview"};
 var CH_EN2DE={};Object.keys(CH_DE2EN).forEach(function(k){CH_EN2DE[CH_DE2EN[k]]=k});
 var I18N={de:{allChapters:'Alle Kapitel',allPrios:'Alle Prios',all:'Alle',open:'offen',edited:'bearbeitet',zdfMissing:'ZDF fehlen',assumption:'Annahme',implementation:'Umsetzung',comment:'Kommentar',alternative:'⚠ Begründung / Alternative (Pflicht bei Ablehnung & In Arbeit)',phAssumption:'Was bedeutet dieses Requirement?',phImplementation:'Technologie, Komponente...',phComment:'Risiken, Abhängigkeiten...',phAlternative:'Alternative Lösung...',gen4Target:'GEN4 ZIEL',criterion:'KRITERIUM',decision:'ENTSCHEIDUNG',accept:'Annehmen',conditional:'In Arbeit',reject:'Ablehnen',prio:'PRIO',category:'KATEGORIE',prev:'Vorheriges',next:'Nächstes',noItems:'Keine Items.',resetConfirm:'ALLES Reset? Alle Eingaben werden geloescht!',zdfResetConfirm:'ZDF & Hinweise zuruecksetzen? (Nur ZDF-Status und Hinweistexte werden zurueckgesetzt, alle anderen Eingaben bleiben erhalten)',zdfResetDone:'ZDF & Hinweise zurueckgesetzt auf Originalwerte',zdfCleared:'ZDF als geklaert markiert',zdfReset:'ZDF-Status zurueckgesetzt',saving:'Speichern...',saved:'Gespeichert',items:'Items',newUnderstanding:'Neues Verständnis (AdvDev)',phNewUnderstanding:'Wie wird dieses Requirement verstanden? Reaktion / Vorschlag...',rev2:'Rev-2',advdevMode:'AdvDev Modus'},en:{allChapters:'All Chapters',allPrios:'All Priorities',all:'All',open:'open',edited:'edited',zdfMissing:'ZDF missing',assumption:'Assumption',implementation:'Implementation',comment:'Comment',alternative:'⚠ Reason / Alternative (Required on rejection & in progress)',phAssumption:'What does this requirement mean?',phImplementation:'Technology, component...',phComment:'Risks, dependencies...',phAlternative:'Alternative solution...',gen4Target:'GEN4 TARGET',criterion:'CRITERION',decision:'DECISION',accept:'Accept',conditional:'In Progress',reject:'Reject',prio:'PRIO',category:'CATEGORY',prev:'Previous',next:'Next',noItems:'No items.',resetConfirm:'FULL Reset? All entries will be deleted!',zdfResetConfirm:'Reset ZDF & hints? (Only ZDF status and hint texts will be reset, all other entries remain)',zdfResetDone:'ZDF & hints reset to original values',zdfCleared:'ZDF marked as resolved',zdfReset:'ZDF status reset',saving:'Saving...',saved:'Saved',items:'items',newUnderstanding:'New Understanding (AdvDev)',phNewUnderstanding:'How is this requirement understood? Response / proposal...',rev2:'Rev-2',advdevMode:'AdvDev Mode'}};
@@ -208,50 +205,6 @@ function App(){
     },30000);
     return function(){clearInterval(iv)};
   },[]);
-
-  var _spStatus=us('');var spStatus=_spStatus[0];var setSpStatus=_spStatus[1];
-  var _spTimer=uref(null);
-  var spSave=uc(function(data){
-    if(!SP_SAVE_URL)return;
-    setSpStatus('syncing');
-    fetch(SP_SAVE_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data:data,timestamp:new Date().toISOString()})})
-      .then(function(r){if(!r.ok)throw new Error(r.status);setSpStatus('synced');if(_spTimer.current)clearTimeout(_spTimer.current);_spTimer.current=setTimeout(function(){setSpStatus('')},5000)})
-      .catch(function(){setSpStatus('sp-error');if(_spTimer.current)clearTimeout(_spTimer.current);_spTimer.current=setTimeout(function(){setSpStatus('')},8000)});
-  },[]);
-
-  ue(function(){
-    if(!SP_LOAD_URL)return;
-    fetch(SP_LOAD_URL).then(function(r){return r.json()}).then(function(sp){
-      if(!sp||!sp.data||typeof sp.data!=='object')return;
-      var remote=sp.data;
-      setEdits(function(local){
-        var localKeys=Object.keys(local);var remoteKeys=Object.keys(remote);
-        if(remoteKeys.length===0)return local;
-        var merged=Object.assign({},local);var changed=false;
-        remoteKeys.forEach(function(id){
-          var rf=remote[id]||{};var lf=merged[id]||{};
-          Object.keys(rf).forEach(function(f){
-            if(rf[f]&&!lf[f]){if(!merged[id])merged[id]={};merged[id]=Object.assign({},merged[id]);merged[id][f]=rf[f];changed=true}
-          });
-        });
-        if(changed){try{localStorage.setItem(SK,JSON.stringify(merged))}catch(e){}}
-        return changed?merged:local;
-      });
-    }).catch(function(){});
-  },[]);
-
-  ue(function(){
-    if(!SP_SAVE_URL)return;
-    var iv=setInterval(function(){
-      var data;try{data=JSON.parse(localStorage.getItem(SK)||'{}')}catch(e){return}
-      if(Object.keys(data).length>0)spSave(data);
-    },SP_SYNC_INTERVAL);
-    setTimeout(function(){
-      var data;try{data=JSON.parse(localStorage.getItem(SK)||'{}')}catch(e){return}
-      if(Object.keys(data).length>0)spSave(data);
-    },10000);
-    return function(){clearInterval(iv)};
-  },[spSave]);
 
   var filtered=um(function(){
     return items.filter(function(item){
@@ -827,8 +780,7 @@ function App(){
               alert('localStorage: '+count+' Items, '+filled+' Felder gefuellt.\n\nDies sind die Daten in DEINEM Browser (nicht auf dem Server).\nKlicke "Export CSV" um diese Daten zu sichern.');
             }catch(e){alert('localStorage leer oder nicht verfuegbar')}
           },style:{background:'#334155',color:'#94a3b8',border:'none',borderRadius:6,padding:'6px 10px',cursor:'pointer',fontSize:11}},'Local Data'),
-          saveStatus?h('span',{style:{fontSize:11,color:saveStatus==='error'?'#dc2626':saveStatus==='local'?'#ca8a04':saveStatus==='saving'?'#ca8a04':'#16a34a',fontWeight:600,marginLeft:4}},saveStatus==='saving'?t('saving'):saveStatus==='saved'?t('saved'):saveStatus==='local'?'Lokal gespeichert':saveStatus==='error'?'Error':''):null,
-          SP_SAVE_URL?h('button',{onClick:function(){var data;try{data=JSON.parse(localStorage.getItem(SK)||'{}')}catch(e){return}spSave(data)},style:{background:spStatus==='synced'?'#166534':spStatus==='sp-error'?'#991b1b':'#334155',color:spStatus==='synced'?'#bbf7d0':spStatus==='sp-error'?'#fca5a5':'#94a3b8',border:'none',borderRadius:6,padding:'6px 10px',cursor:'pointer',fontSize:11}},spStatus==='syncing'?'SP Sync...':spStatus==='synced'?'SP ✓':spStatus==='sp-error'?'SP Fehler':'SP Sync'):null
+          saveStatus?h('span',{style:{fontSize:11,color:saveStatus==='error'?'#dc2626':saveStatus==='local'?'#ca8a04':saveStatus==='saving'?'#ca8a04':'#16a34a',fontWeight:600,marginLeft:4}},saveStatus==='saving'?t('saving'):saveStatus==='saved'?t('saved'):saveStatus==='local'?'Lokal gespeichert':saveStatus==='error'?'Error':''):null
         )
       )
     ),
