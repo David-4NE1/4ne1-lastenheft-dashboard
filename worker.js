@@ -22,68 +22,93 @@ export default {
     }
 
     const url = new URL(request.url);
-    const LOAD_URL = env.PA_LOAD_URL || '';
-    const SAVE_URL = env.PA_SAVE_URL || '';
+    const KEY = 'dashboard-data';
+    const BACKUP_INTERVAL = 3600;
 
-    async function loadFromSP() {
-      if (!LOAD_URL) throw new Error('PA_LOAD_URL not configured');
-      const resp = await fetch(LOAD_URL, { method: 'GET' });
-      if (!resp.ok) throw new Error('SP load failed: ' + resp.status);
-      const text = await resp.text();
-      try { return JSON.parse(text); } catch (e) { return {}; }
-    }
-
-    async function saveToSP(data) {
-      if (!SAVE_URL) throw new Error('PA_SAVE_URL not configured');
-      const resp = await fetch(SAVE_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (!resp.ok) throw new Error('SP save failed: ' + resp.status);
+    async function autoBackup() {
+      const lastKey = await env.KV.get('backup-latest-ts');
+      const now = Date.now();
+      if (lastKey && (now - parseInt(lastKey)) < BACKUP_INTERVAL * 1000) return;
+      const current = await env.KV.get(KEY, 'text');
+      if (current && current !== '{}') {
+        const ts = new Date().toISOString().replace(/[:.]/g, '-');
+        await env.KV.put('backup-' + ts, current, { expirationTtl: 2592000 });
+        await env.KV.put('backup-latest-ts', String(now));
+      }
     }
 
     if (url.pathname === '/data') {
-      try {
-        if (request.method === 'GET') {
-          const data = await loadFromSP();
-          return new Response(JSON.stringify(data), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        }
+      if (request.method === 'GET') {
+        const data = await env.KV.get(KEY, 'json') || {};
+        return new Response(JSON.stringify(data), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
 
-        if (request.method === 'PATCH') {
-          const delta = await request.json();
-          const existing = await loadFromSP();
-          Object.keys(delta).forEach(function (id) {
-            if (!existing[id]) existing[id] = {};
-            Object.keys(delta[id]).forEach(function (field) {
-              existing[id][field] = delta[id][field];
-            });
+      if (request.method === 'PATCH') {
+        await autoBackup();
+        const delta = await request.json();
+        const existing = await env.KV.get(KEY, 'json') || {};
+        Object.keys(delta).forEach(function (id) {
+          if (!existing[id]) existing[id] = {};
+          Object.keys(delta[id]).forEach(function (field) {
+            existing[id][field] = delta[id][field];
           });
-          await saveToSP(existing);
-          return new Response(JSON.stringify({ ok: true }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        }
+        });
+        await env.KV.put(KEY, JSON.stringify(existing));
+        return new Response(JSON.stringify({ ok: true }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
 
-        if (request.method === 'POST') {
-          const body = await request.json();
-          await saveToSP(body);
-          return new Response(JSON.stringify({ ok: true }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        }
+      if (request.method === 'POST') {
+        await autoBackup();
+        const body = await request.json();
+        await env.KV.put(KEY, JSON.stringify(body));
+        return new Response(JSON.stringify({ ok: true }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
 
-        if (request.method === 'DELETE') {
-          await saveToSP({});
-          return new Response(JSON.stringify({ ok: true }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
+      if (request.method === 'DELETE') {
+        await autoBackup();
+        await env.KV.put(KEY, '{}');
+        return new Response(JSON.stringify({ ok: true }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    if (url.pathname === '/backups') {
+      const list = await env.KV.list({ prefix: 'backup-', limit: 100 });
+      const backups = list.keys
+        .filter(function(k) { return k.name !== 'backup-latest-ts'; })
+        .map(function(k) { return { key: k.name }; });
+      backups.sort(function(a, b) { return b.key.localeCompare(a.key); });
+      return new Response(JSON.stringify(backups), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (url.pathname.startsWith('/backup/')) {
+      const backupKey = decodeURIComponent(url.pathname.slice(8));
+      if (request.method === 'GET') {
+        const data = await env.KV.get(backupKey, 'json');
+        if (!data) return new Response(JSON.stringify({ error: 'not found' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        return new Response(JSON.stringify(data), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      if (request.method === 'POST') {
+        const current = await env.KV.get(KEY, 'text');
+        if (current && current !== '{}') {
+          const ts = new Date().toISOString().replace(/[:.]/g, '-');
+          await env.KV.put('backup-' + ts, current, { expirationTtl: 2592000 });
         }
-      } catch (e) {
-        return new Response(JSON.stringify({ error: 'sharepoint error', detail: e.message }), {
-          status: 502,
+        const data = await env.KV.get(backupKey, 'text');
+        if (!data) return new Response(JSON.stringify({ error: 'not found' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        await env.KV.put(KEY, data);
+        return new Response(JSON.stringify({ ok: true, restored: backupKey }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
