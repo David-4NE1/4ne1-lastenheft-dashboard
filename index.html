@@ -78,7 +78,7 @@ var PC={A:'#C0392B',B:'#B58900'};
 var SK='neura-4ne1-req-data';
 var CH_DE2EN={"2.1.4 Verkleidung & Struktur":"2.1.4 Cover & Structure","2.1.5 Kinematik & Mechanik":"2.1.5 Kinematics & Mechanics","2.2 Sensorik & Perception":"2.2 Sensors & Perception","2.1.5 Fuss & Lokomotion":"2.1.5 Foot & Locomotion","2.3 Compute Architektur":"2.3 Compute Architecture","2.4 Netzwerk & TSN":"2.4 Network & TSN","2.5 Software & Steuerung":"2.5 Software & Control","2.8 Energie & Thermik":"2.8 Power & Thermal","2.7.3 E-Stop Konzept":"2.7.3 E-Stop Concept","2.12 Lieferant Leili":"2.12 Supplier Leili","6.5 Projekt-Risiken":"6.5 Project Risks","2.7 Safety & Compliance":"2.7 Safety & Compliance","2.1.4 Design Rules":"2.1.4 Design Rules","5. Testing & EOL":"5. Testing & EOL","7. Open Points":"7. Open Points","2.1 System Overview":"2.1 System Overview"};
 var CH_EN2DE={};Object.keys(CH_DE2EN).forEach(function(k){CH_EN2DE[CH_DE2EN[k]]=k});
-var I18N={de:{allChapters:'Alle Kapitel',allPrios:'Alle Prios',all:'Alle',open:'offen',edited:'bearbeitet',zdfMissing:'ZDF fehlen',assumption:'Annahme',implementation:'Umsetzung',comment:'Kommentar',alternative:'⚠ Begründung / Alternative (Pflicht bei Ablehnung)',phAssumption:'Was bedeutet dieses Requirement?',phImplementation:'Technologie, Komponente...',phComment:'Risiken, Abhängigkeiten...',phAlternative:'Alternative Lösung...',gen4Target:'GEN4 ZIEL',criterion:'KRITERIUM',decision:'ENTSCHEIDUNG',accept:'Annehmen',conditional:'In Arbeit',reject:'Ablehnen',prio:'PRIO',category:'KATEGORIE',prev:'Vorheriges',next:'Nächstes',noItems:'Keine Items.',resetConfirm:'ALLES Reset? Alle Eingaben werden geloescht!',zdfResetConfirm:'ZDF & Hinweise zuruecksetzen? (Nur ZDF-Status und Hinweistexte werden zurueckgesetzt, alle anderen Eingaben bleiben erhalten)',zdfResetDone:'ZDF & Hinweise zurueckgesetzt auf Originalwerte',zdfCleared:'ZDF als geklaert markiert',zdfReset:'ZDF-Status zurueckgesetzt',saving:'Speichern...',saved:'Gespeichert',items:'Items'},en:{allChapters:'All Chapters',allPrios:'All Priorities',all:'All',open:'open',edited:'edited',zdfMissing:'ZDF missing',assumption:'Assumption',implementation:'Implementation',comment:'Comment',alternative:'⚠ Reason / Alternative (Required on rejection)',phAssumption:'What does this requirement mean?',phImplementation:'Technology, component...',phComment:'Risks, dependencies...',phAlternative:'Alternative solution...',gen4Target:'GEN4 TARGET',criterion:'CRITERION',decision:'DECISION',accept:'Accept',conditional:'In Progress',reject:'Reject',prio:'PRIO',category:'CATEGORY',prev:'Previous',next:'Next',noItems:'No items.',resetConfirm:'FULL Reset? All entries will be deleted!',zdfResetConfirm:'Reset ZDF & hints? (Only ZDF status and hint texts will be reset, all other entries remain)',zdfResetDone:'ZDF & hints reset to original values',zdfCleared:'ZDF marked as resolved',zdfReset:'ZDF status reset',saving:'Saving...',saved:'Saved',items:'items'}};
+var I18N={de:{allChapters:'Alle Kapitel',allPrios:'Alle Prios',all:'Alle',open:'offen',edited:'bearbeitet',zdfMissing:'ZDF fehlen',assumption:'Annahme',implementation:'Umsetzung',comment:'Kommentar',alternative:'⚠ Begründung / Alternative (Pflicht bei Ablehnung & In Arbeit)',phAssumption:'Was bedeutet dieses Requirement?',phImplementation:'Technologie, Komponente...',phComment:'Risiken, Abhängigkeiten...',phAlternative:'Alternative Lösung...',gen4Target:'GEN4 ZIEL',criterion:'KRITERIUM',decision:'ENTSCHEIDUNG',accept:'Annehmen',conditional:'In Arbeit',reject:'Ablehnen',prio:'PRIO',category:'KATEGORIE',prev:'Vorheriges',next:'Nächstes',noItems:'Keine Items.',resetConfirm:'ALLES Reset? Alle Eingaben werden geloescht!',zdfResetConfirm:'ZDF & Hinweise zuruecksetzen? (Nur ZDF-Status und Hinweistexte werden zurueckgesetzt, alle anderen Eingaben bleiben erhalten)',zdfResetDone:'ZDF & Hinweise zurueckgesetzt auf Originalwerte',zdfCleared:'ZDF als geklaert markiert',zdfReset:'ZDF-Status zurueckgesetzt',saving:'Speichern...',saved:'Gespeichert',items:'Items'},en:{allChapters:'All Chapters',allPrios:'All Priorities',all:'All',open:'open',edited:'edited',zdfMissing:'ZDF missing',assumption:'Assumption',implementation:'Implementation',comment:'Comment',alternative:'⚠ Reason / Alternative (Required on rejection & in progress)',phAssumption:'What does this requirement mean?',phImplementation:'Technology, component...',phComment:'Risks, dependencies...',phAlternative:'Alternative solution...',gen4Target:'GEN4 TARGET',criterion:'CRITERION',decision:'DECISION',accept:'Accept',conditional:'In Progress',reject:'Reject',prio:'PRIO',category:'CATEGORY',prev:'Previous',next:'Next',noItems:'No items.',resetConfirm:'FULL Reset? All entries will be deleted!',zdfResetConfirm:'Reset ZDF & hints? (Only ZDF status and hint texts will be reset, all other entries remain)',zdfResetDone:'ZDF & hints reset to original values',zdfCleared:'ZDF marked as resolved',zdfReset:'ZDF status reset',saving:'Saving...',saved:'Saved',items:'items'}};
 
 function App(){
   var _i=us(function(){return RAW.map(EXPAND)});var items=_i[0];
@@ -241,7 +241,7 @@ function App(){
           ),
           h('button',{onClick:function(){
             // PDF 1: Compact
-            var blocked=[];items.forEach(function(it){var e=edits[it.id]||{};if(e.decision==='rejected'&&!e.alternative)blocked.push(it.id+' (Ablehnung ohne Begr\u00fcndung)');if(e.decision==='conditional'&&!e.comment)blocked.push(it.id+' (In Arbeit ohne Kommentar)')});
+            var blocked=[];items.forEach(function(it){var e=edits[it.id]||{};if(e.decision==='rejected'&&!e.alternative)blocked.push(it.id+' (Ablehnung ohne Begr\u00fcndung)');if(e.decision==='conditional'&&!e.alternative)blocked.push(it.id+' (In Arbeit ohne Begründung)')});
             if(blocked.length>0){alert('Export blockiert!\n\n'+blocked.length+' Requirements mit fehlenden Pflichtfeldern:\n\n'+blocked.join('\n'));return}
             var esc=function(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')};
             var date=new Date().toISOString().split('T')[0];var pw=window.open('','_blank');
@@ -265,7 +265,7 @@ function App(){
                 d+='<td>'+dec+'</td>';
                 d+='<td class="'+(e.assumption?'green':'red')+'">'+(e.assumption||'[offen]')+'</td>';
                 d+='<td class="'+(e.implementation?'green':'red')+'">'+(e.implementation||'[offen]')+'</td>';
-                d+='<td class="'+(e.comment?'green':'red')+'">'+(e.comment||'[offen]')+'</td></tr>';
+                d+='<td'+(e.comment?' class="green"':'')+'>'+((e.comment?esc(e.comment):''))+'</td></tr>';
                 if(e.alternative)d+='<tr><td colspan=9 style="background:#fef2f2;border-left:2px solid #dc2626;font-size:6.5pt"><b>Alternative:</b> '+esc(e.alternative)+'</td></tr>';
               });
               d+='</table>';
@@ -278,7 +278,7 @@ function App(){
           },style:{background:'#7c3aed',color:'white',border:'none',borderRadius:6,padding:'8px 16px',cursor:'pointer',fontSize:14,fontWeight:600}},'PDF Kompakt'),
           h('button',{onClick:function(){
             // PDF 2: Full
-            var blocked=[];items.forEach(function(it){var e=edits[it.id]||{};if(e.decision==='rejected'&&!e.alternative)blocked.push(it.id+' (Ablehnung ohne Begr\u00fcndung)');if(e.decision==='conditional'&&!e.comment)blocked.push(it.id+' (In Arbeit ohne Kommentar)')});
+            var blocked=[];items.forEach(function(it){var e=edits[it.id]||{};if(e.decision==='rejected'&&!e.alternative)blocked.push(it.id+' (Ablehnung ohne Begr\u00fcndung)');if(e.decision==='conditional'&&!e.alternative)blocked.push(it.id+' (In Arbeit ohne Begründung)')});
             if(blocked.length>0){alert('Export blockiert!\n\n'+blocked.length+' Requirements mit fehlenden Pflichtfeldern:\n\n'+blocked.join('\n'));return}
             var esc=function(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')};
             var date=new Date().toISOString().split('T')[0];var pw=window.open('','_blank');
@@ -401,7 +401,7 @@ function App(){
           },style:{background:'#0f766e',color:'white',border:'none',borderRadius:6,padding:'8px 16px',cursor:'pointer',fontSize:14,fontWeight:600}},'PDF Vollst\u00e4ndig'),
           h('button',{onClick:function(){
             // DOCX - Full Lastenheft with prose + data tables + team inputs
-            var blocked=[];items.forEach(function(it){var e=edits[it.id]||{};if(e.decision==='rejected'&&!e.alternative)blocked.push(it.id+' (Ablehnung ohne Begründung)');if(e.decision==='conditional'&&!e.comment)blocked.push(it.id+' (In Arbeit ohne Kommentar)')});
+            var blocked=[];items.forEach(function(it){var e=edits[it.id]||{};if(e.decision==='rejected'&&!e.alternative)blocked.push(it.id+' (Ablehnung ohne Begründung)');if(e.decision==='conditional'&&!e.alternative)blocked.push(it.id+' (In Arbeit ohne Begründung)')});
             if(blocked.length>0){alert('Export blockiert!\n\n'+blocked.length+' Requirements mit fehlenden Pflichtfeldern:\n\n'+blocked.join('\n'));return}
             var esc=function(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')};
             var date=new Date().toISOString().split('T')[0];
@@ -803,7 +803,7 @@ function App(){
                   var phs={assumption:t('phAssumption'),implementation:t('phImplementation'),comment:t('phComment'),alternative:t('phAlternative')};
                   var filled=!!e[field];
                   var isAlt=field==='alternative';
-                  var isRequired=(field==='comment'&&e.decision==='conditional')||isAlt;
+                  var isRequired=isAlt;
                   return h('div',{key:field},
                     h('label',{style:{fontSize:10,fontWeight:600,color:filled?'#16a34a':isRequired?'#dc2626':'#94a3b8',display:'block',marginBottom:2}},(filled?'\u2713 ':'\u25cb ')+labels[field]),
                     h('textarea',{value:e[field]||'',onChange:function(ev){upd(item.id,field,ev.target.value)},placeholder:phs[field],rows:2,
