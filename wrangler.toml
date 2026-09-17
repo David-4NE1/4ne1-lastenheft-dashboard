@@ -5,3 +5,8 @@ compatibility_date = "2024-12-01"
 [[kv_namespaces]]
 binding = "KV"
 id = "940e73e95bdc4fd78eeda99489a728fb"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "lastenheft-dashboard"
+database_id = "5beee687-4d6f-4607-ada3-4d9cc306f4f4"
