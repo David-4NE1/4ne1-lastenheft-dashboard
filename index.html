@@ -199,9 +199,19 @@ function App(){
   },[_flushToServer]);
 
   ue(function(){
-    var tid;
+    var tid;var backoff=0;
+    function getInterval(){
+      var h=new Date().getHours();
+      var base=(h>=0&&h<7)?300000:120000;
+      if(backoff>0)return Math.min(base*Math.pow(2,backoff),600000);
+      return base;
+    }
     function syncPoll(){
-      fetch(WORKER_URL+'/data',{headers:{'X-API-Key':API_KEY}}).then(function(r){return r.json()}).then(function(remote){
+      if(document.hidden){scheduleNext();return}
+      fetch(WORKER_URL+'/data',{headers:{'X-API-Key':API_KEY}}).then(function(r){
+        if(r.status===429){backoff=Math.min(backoff+1,4);return null}
+        backoff=Math.max(backoff-1,0);return r.json();
+      }).then(function(remote){
         if(!remote||typeof remote!=='object')return;
         var dirty=_dirtyFields.current;
         setEdits(function(prev){
@@ -237,10 +247,11 @@ function App(){
           if(changed){try{localStorage.setItem(SK,JSON.stringify(merged))}catch(e){}}
           return changed?merged:prev;
         });
-      }).catch(function(){}).then(function(){scheduleNext()});
+      }).catch(function(){backoff=Math.min(backoff+1,4)}).then(function(){scheduleNext()});
     }
-    function scheduleNext(){var h=new Date().getHours();tid=setTimeout(syncPoll,(h>=0&&h<7)?300000:120000)}
+    function scheduleNext(){tid=setTimeout(syncPoll,getInterval())}
     scheduleNext();
+    document.addEventListener('visibilitychange',function(){if(!document.hidden){clearTimeout(tid);syncPoll()}});
     return function(){clearTimeout(tid)};
   },[]);
 
