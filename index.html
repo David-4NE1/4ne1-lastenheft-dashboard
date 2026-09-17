@@ -199,7 +199,8 @@ function App(){
   },[_flushToServer]);
 
   ue(function(){
-    var iv=setInterval(function(){
+    var tid;
+    function syncPoll(){
       fetch(WORKER_URL+'/data',{headers:{'X-API-Key':API_KEY}}).then(function(r){return r.json()}).then(function(remote){
         if(!remote||typeof remote!=='object')return;
         var dirty=_dirtyFields.current;
@@ -236,9 +237,11 @@ function App(){
           if(changed){try{localStorage.setItem(SK,JSON.stringify(merged))}catch(e){}}
           return changed?merged:prev;
         });
-      }).catch(function(){});
-    },30000);
-    return function(){clearInterval(iv)};
+      }).catch(function(){}).then(function(){scheduleNext()});
+    }
+    function scheduleNext(){var h=new Date().getHours();tid=setTimeout(syncPoll,(h>=0&&h<7)?300000:120000)}
+    scheduleNext();
+    return function(){clearTimeout(tid)};
   },[]);
 
   var filtered=um(function(){
