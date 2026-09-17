@@ -44,23 +44,59 @@ export default {
 
     const url = new URL(request.url);
     const KEY = 'dashboard-data';
+
+    const useD1 = !!env.DB;
+
+    async function dbGet(key) {
+      if (useD1) {
+        const row = await env.DB.prepare('SELECT value FROM store WHERE key = ?').bind(key).first();
+        return row ? JSON.parse(row.value) : null;
+      }
+      return env.KV.get(key, 'json');
+    }
+
+    async function dbGetText(key) {
+      if (useD1) {
+        const row = await env.DB.prepare('SELECT value FROM store WHERE key = ?').bind(key).first();
+        return row ? row.value : null;
+      }
+      return env.KV.get(key, 'text');
+    }
+
+    async function dbPut(key, value, opts) {
+      if (useD1) {
+        await env.DB.prepare('INSERT OR REPLACE INTO store (key, value) VALUES (?, ?)').bind(key, typeof value === 'string' ? value : JSON.stringify(value)).run();
+        return;
+      }
+      await env.KV.put(key, typeof value === 'string' ? value : JSON.stringify(value), opts || {});
+    }
+
+    async function dbList(prefix) {
+      if (useD1) {
+        const rows = await env.DB.prepare("SELECT key FROM store WHERE key LIKE ? AND key != 'backup-latest-ts' ORDER BY key DESC LIMIT 100").bind(prefix + '%').all();
+        return rows.results.map(function(r) { return { name: r.key }; });
+      }
+      const list = await env.KV.list({ prefix: prefix, limit: 100 });
+      return list.keys.filter(function(k) { return k.name !== 'backup-latest-ts'; });
+    }
+
     const BACKUP_INTERVAL = 3600;
 
     async function autoBackup() {
-      const lastKey = await env.KV.get('backup-latest-ts');
+      const lastTs = await dbGetText('backup-latest-ts');
       const now = Date.now();
-      if (lastKey && (now - parseInt(lastKey)) < BACKUP_INTERVAL * 1000) return;
-      const current = await env.KV.get(KEY, 'text');
+      if (lastTs && (now - parseInt(lastTs)) < BACKUP_INTERVAL * 1000) return;
+      const current = await dbGetText(KEY);
       if (current && current !== '{}') {
         const ts = new Date().toISOString().replace(/[:.]/g, '-');
-        await env.KV.put('backup-' + ts, current, { expirationTtl: 2592000 });
-        await env.KV.put('backup-latest-ts', String(now));
+        await dbPut('backup-' + ts, current, { expirationTtl: 2592000 });
+        await dbPut('backup-latest-ts', String(now));
       }
     }
 
     if (url.pathname === '/data') {
       if (request.method === 'GET') {
-        const data = await env.KV.get(KEY, 'json') || {};
+        const data = await dbGet(KEY) || {};
         return new Response(JSON.stringify(data), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
@@ -69,14 +105,14 @@ export default {
       if (request.method === 'PATCH') {
         await autoBackup();
         const delta = await request.json();
-        const existing = await env.KV.get(KEY, 'json') || {};
+        const existing = await dbGet(KEY) || {};
         Object.keys(delta).forEach(function (id) {
           if (!existing[id]) existing[id] = {};
           Object.keys(delta[id]).forEach(function (field) {
             existing[id][field] = delta[id][field];
           });
         });
-        await env.KV.put(KEY, JSON.stringify(existing));
+        await dbPut(KEY, JSON.stringify(existing));
         return new Response(JSON.stringify({ ok: true }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
@@ -85,7 +121,7 @@ export default {
       if (request.method === 'POST') {
         await autoBackup();
         const body = await request.json();
-        await env.KV.put(KEY, JSON.stringify(body));
+        await dbPut(KEY, JSON.stringify(body));
         return new Response(JSON.stringify({ ok: true }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
@@ -93,7 +129,7 @@ export default {
 
       if (request.method === 'DELETE') {
         await autoBackup();
-        await env.KV.put(KEY, '{}');
+        await dbPut(KEY, '{}');
         return new Response(JSON.stringify({ ok: true }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
@@ -101,10 +137,8 @@ export default {
     }
 
     if (url.pathname === '/backups') {
-      const list = await env.KV.list({ prefix: 'backup-', limit: 100 });
-      const backups = list.keys
-        .filter(function(k) { return k.name !== 'backup-latest-ts'; })
-        .map(function(k) { return { key: k.name }; });
+      const keys = await dbList('backup-');
+      const backups = keys.map(function(k) { return { key: k.name }; });
       backups.sort(function(a, b) { return b.key.localeCompare(a.key); });
       return new Response(JSON.stringify(backups), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -114,25 +148,41 @@ export default {
     if (url.pathname.startsWith('/backup/')) {
       const backupKey = decodeURIComponent(url.pathname.slice(8));
       if (request.method === 'GET') {
-        const data = await env.KV.get(backupKey, 'json');
+        const data = await dbGet(backupKey);
         if (!data) return new Response(JSON.stringify({ error: 'not found' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         return new Response(JSON.stringify(data), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
       if (request.method === 'POST') {
-        const current = await env.KV.get(KEY, 'text');
+        const current = await dbGetText(KEY);
         if (current && current !== '{}') {
           const ts = new Date().toISOString().replace(/[:.]/g, '-');
-          await env.KV.put('backup-' + ts, current, { expirationTtl: 2592000 });
+          await dbPut('backup-' + ts, current, { expirationTtl: 2592000 });
         }
-        const data = await env.KV.get(backupKey, 'text');
+        const data = await dbGetText(backupKey);
         if (!data) return new Response(JSON.stringify({ error: 'not found' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-        await env.KV.put(KEY, data);
+        await dbPut(KEY, data);
         return new Response(JSON.stringify({ ok: true, restored: backupKey }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
+    }
+
+    if (url.pathname === '/migrate-kv-to-d1') {
+      if (!useD1) {
+        return new Response(JSON.stringify({ error: 'D1 not bound' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
+      const data = await env.KV.get(KEY, 'text');
+      if (data) {
+        await env.DB.prepare('INSERT OR REPLACE INTO store (key, value) VALUES (?, ?)').bind(KEY, data).run();
+        return new Response(JSON.stringify({ ok: true, migrated: KEY, size: data.length }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      return new Response(JSON.stringify({ ok: true, migrated: null }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     return new Response(JSON.stringify({ error: 'not found' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
