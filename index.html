@@ -170,10 +170,12 @@ function App(){
       keys.sort();while(keys.length>MAX_BACKUPS){localStorage.removeItem(keys.shift())}
     }catch(e){}
   };
+  var _writeBackoff=uref(0);
   var _flushToServer=uc(function(){
     var delta=_pendingDelta.current;
     if(Object.keys(delta).length===0){_hasPending.current=false;setSaveStatus('saved');if(_ssTimer.current)clearTimeout(_ssTimer.current);_ssTimer.current=setTimeout(function(){setSaveStatus('')},3000);return}
-    fetch(WORKER_URL+'/data',{method:'PATCH',headers:AUTH_HEADERS,body:JSON.stringify(delta)}).then(function(resp){if(!resp.ok)throw new Error(resp.status);_dirtyFields.current={};_pendingDelta.current={};_hasPending.current=false;setSaveStatus('saved');if(_ssTimer.current)clearTimeout(_ssTimer.current);_ssTimer.current=setTimeout(function(){setSaveStatus('')},3000)}).catch(function(){_hasPending.current=true;setSaveStatus('local')});
+    if(_writeBackoff.current>0){_hasPending.current=true;setSaveStatus('local');return}
+    fetch(WORKER_URL+'/data',{method:'PATCH',headers:AUTH_HEADERS,body:JSON.stringify(delta)}).then(function(resp){if(resp.status===429){_writeBackoff.current=Math.min((_writeBackoff.current||1)*2,8);setTimeout(function(){_writeBackoff.current=Math.max(_writeBackoff.current-1,0)},60000);throw new Error('429')}if(!resp.ok)throw new Error(resp.status);_writeBackoff.current=0;_dirtyFields.current={};_pendingDelta.current={};_hasPending.current=false;setSaveStatus('saved');if(_ssTimer.current)clearTimeout(_ssTimer.current);_ssTimer.current=setTimeout(function(){setSaveStatus('')},3000)}).catch(function(){_hasPending.current=true;setSaveStatus('local')});
   },[]);
   var save=uc(function(fullState){
     if(_saveTimer.current)clearTimeout(_saveTimer.current);
@@ -183,7 +185,7 @@ function App(){
       try{localStorage.setItem(SK,JSON.stringify(fullState))}catch(e){}
       autoLocalBackup(fullState);
       _flushToServer();
-    },1000);
+    },3000);
   },[_flushToServer]);
   var upd=uc(function(id,field,value){
     var df=_dirtyFields.current;if(!df[id])df[id]={};df[id][field]=true;
@@ -194,7 +196,7 @@ function App(){
   ue(function(){
     var onBeforeUnload=function(e){if(_hasPending.current){e.preventDefault();e.returnValue='';try{var d=_pendingDelta.current;if(Object.keys(d).length>0){navigator.sendBeacon(WORKER_URL+'/beacon','');var ls=localStorage.getItem(SK);if(ls)localStorage.setItem(SK,ls)};}catch(ex){}}};
     window.addEventListener('beforeunload',onBeforeUnload);
-    var retryIv=setInterval(function(){if(_hasPending.current&&Object.keys(_pendingDelta.current).length>0){_flushToServer()}},15000);
+    var retryIv=setInterval(function(){if(_hasPending.current&&Object.keys(_pendingDelta.current).length>0){_flushToServer()}},60000);
     return function(){window.removeEventListener('beforeunload',onBeforeUnload);clearInterval(retryIv)};
   },[_flushToServer]);
 
@@ -242,7 +244,11 @@ function App(){
             });
           });
           if(Object.keys(delta).length>0){
-            fetch(WORKER_URL+'/data',{method:'PATCH',headers:AUTH_HEADERS,body:JSON.stringify(delta)}).catch(function(){});
+            Object.keys(delta).forEach(function(did){
+              if(!_pendingDelta.current[did])_pendingDelta.current[did]={};
+              Object.assign(_pendingDelta.current[did],delta[did]);
+            });
+            _hasPending.current=true;_flushToServer();
           }
           if(changed){try{localStorage.setItem(SK,JSON.stringify(merged))}catch(e){}}
           return changed?merged:prev;
