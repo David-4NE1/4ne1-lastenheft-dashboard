@@ -24,23 +24,27 @@ export default {
       }
     }
 
-    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
-    const rlKey = 'rl:' + ip;
-    const rlData = await env.KV.get(rlKey, 'json');
-    const now = Math.floor(Date.now() / 1000);
-    let count = 0;
-    let windowStart = now;
-    if (rlData && (now - rlData.start) < RATE_WINDOW) {
-      count = rlData.count;
-      windowStart = rlData.start;
+    try {
+      const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+      const rlKey = 'rl:' + ip;
+      const rlData = await env.KV.get(rlKey, 'json');
+      const now = Math.floor(Date.now() / 1000);
+      let count = 0;
+      let windowStart = now;
+      if (rlData && (now - rlData.start) < RATE_WINDOW) {
+        count = rlData.count;
+        windowStart = rlData.start;
+      }
+      if (count >= RATE_LIMIT) {
+        return new Response(JSON.stringify({ error: 'rate limit exceeded' }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': String(RATE_WINDOW - (now - windowStart)) },
+        });
+      }
+      await env.KV.put(rlKey, JSON.stringify({ start: windowStart, count: count + 1 }), { expirationTtl: RATE_WINDOW * 2 });
+    } catch (e) {
+      // KV unavailable (e.g. daily quota exceeded) — fail open, do not block requests
     }
-    if (count >= RATE_LIMIT) {
-      return new Response(JSON.stringify({ error: 'rate limit exceeded' }), {
-        status: 429,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': String(RATE_WINDOW - (now - windowStart)) },
-      });
-    }
-    await env.KV.put(rlKey, JSON.stringify({ start: windowStart, count: count + 1 }), { expirationTtl: RATE_WINDOW * 2 });
 
     const url = new URL(request.url);
     const KEY = 'dashboard-data';
