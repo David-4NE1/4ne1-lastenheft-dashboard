@@ -24,31 +24,6 @@ export default {
       }
     }
 
-    try {
-      const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
-      const rlKey = 'rl:' + ip;
-      const rlData = await env.KV.get(rlKey, 'json');
-      const now = Math.floor(Date.now() / 1000);
-      let count = 0;
-      let windowStart = now;
-      if (rlData && (now - rlData.start) < RATE_WINDOW) {
-        count = rlData.count;
-        windowStart = rlData.start;
-      }
-      if (count >= RATE_LIMIT) {
-        return new Response(JSON.stringify({ error: 'rate limit exceeded' }), {
-          status: 429,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': String(RATE_WINDOW - (now - windowStart)) },
-        });
-      }
-      await env.KV.put(rlKey, JSON.stringify({ start: windowStart, count: count + 1 }), { expirationTtl: RATE_WINDOW * 2 });
-    } catch (e) {
-      // KV unavailable (e.g. daily quota exceeded) — fail open, do not block requests
-    }
-
-    const url = new URL(request.url);
-    const KEY = 'dashboard-data';
-
     const useD1 = !!env.DB;
 
     async function dbGet(key) {
@@ -83,6 +58,31 @@ export default {
       const list = await env.KV.list({ prefix: prefix, limit: 100 });
       return list.keys.filter(function(k) { return k.name !== 'backup-latest-ts'; });
     }
+
+    try {
+      const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+      const rlKey = 'rl:' + ip;
+      const rlData = await dbGet(rlKey);
+      const now = Math.floor(Date.now() / 1000);
+      let count = 0;
+      let windowStart = now;
+      if (rlData && (now - rlData.start) < RATE_WINDOW) {
+        count = rlData.count;
+        windowStart = rlData.start;
+      }
+      if (count >= RATE_LIMIT) {
+        return new Response(JSON.stringify({ error: 'rate limit exceeded' }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': String(RATE_WINDOW - (now - windowStart)) },
+        });
+      }
+      await dbPut(rlKey, JSON.stringify({ start: windowStart, count: count + 1 }), { expirationTtl: RATE_WINDOW * 2 });
+    } catch (e) {
+      // rate-limit store unavailable (e.g. daily quota exceeded) — fail open, do not block requests
+    }
+
+    const url = new URL(request.url);
+    const KEY = 'dashboard-data';
 
     const BACKUP_INTERVAL = 3600;
 
