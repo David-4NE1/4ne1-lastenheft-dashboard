@@ -192,6 +192,18 @@ function App(){
     var pd=_pendingDelta.current;if(!pd[id])pd[id]={};pd[id][field]=value;
     setEdits(function(prev){var next=Object.assign({},prev);next[id]=Object.assign({},next[id]||{});next[id][field]=value;save(next);return next});
   },[save]);
+  var updMulti=uc(function(id,fields){
+    var df=_dirtyFields.current;if(!df[id])df[id]={};
+    var pd=_pendingDelta.current;if(!pd[id])pd[id]={};
+    Object.keys(fields).forEach(function(field){df[id][field]=true;pd[id][field]=fields[field]});
+    setEdits(function(prev){var next=Object.assign({},prev);next[id]=Object.assign({},next[id]||{},fields);save(next);return next});
+  },[save]);
+  var setAdvDecision=uc(function(id,newVal){
+    var fields={advDecision:newVal};
+    if(newVal!=='rework'){fields.advGen4='';fields.advCriterion=''}
+    if(newVal===''){fields.newUnderstanding=''}
+    updMulti(id,fields);
+  },[updMulti]);
 
   ue(function(){
     var onBeforeUnload=function(e){if(_hasPending.current){e.preventDefault();e.returnValue='';try{var d=_pendingDelta.current;if(Object.keys(d).length>0){navigator.sendBeacon(WORKER_URL+'/beacon','');var ls=localStorage.getItem(SK);if(ls)localStorage.setItem(SK,ls)};}catch(ex){}}};
@@ -1133,11 +1145,11 @@ function App(){
                     h('div',{style:{marginBottom:14}},
                       h('div',{style:{fontSize:10,fontWeight:600,color:'#991b1b',marginBottom:6}},'ADVDEV ENTSCHEIDUNG'),
                       h('div',{style:{display:'flex',gap:6,flexWrap:'wrap'}},
-                        h('button',{onClick:function(){upd(item.id,'advDecision',e.advDecision==='accepted'?'':'accepted')},
+                        h('button',{onClick:function(){setAdvDecision(item.id,e.advDecision==='accepted'?'':'accepted')},
                           style:{padding:'10px 20px',borderRadius:6,border:e.advDecision==='accepted'?'2px solid #16a34a':'1px solid #d1d5db',background:e.advDecision==='accepted'?'#f0fdf4':'white',color:e.advDecision==='accepted'?'#16a34a':'#64748b',fontSize:13,fontWeight:600,cursor:'pointer'}},'\u2713 Akzeptieren (Pre-Series Vorschlag \u00fcbernehmen)'),
-                        h('button',{onClick:function(){upd(item.id,'advDecision',e.advDecision==='rework'?'':'rework')},
+                        h('button',{onClick:function(){setAdvDecision(item.id,e.advDecision==='rework'?'':'rework')},
                           style:{padding:'10px 20px',borderRadius:6,border:e.advDecision==='rework'?'2px solid #f59e0b':'1px solid #d1d5db',background:e.advDecision==='rework'?'#fffbeb':'white',color:e.advDecision==='rework'?'#f59e0b':'#64748b',fontSize:13,fontWeight:600,cursor:'pointer'}},'\u21bb \u00dcberarbeiten (an Pre-Series zur\u00fccksenden)'),
-                        h('button',{onClick:function(){upd(item.id,'advDecision',e.advDecision==='rejected'?'':'rejected')},
+                        h('button',{onClick:function(){setAdvDecision(item.id,e.advDecision==='rejected'?'':'rejected')},
                           style:{padding:'10px 20px',borderRadius:6,border:e.advDecision==='rejected'?'2px solid #dc2626':'1px solid #d1d5db',background:e.advDecision==='rejected'?'#fef2f2':'white',color:e.advDecision==='rejected'?'#dc2626':'#64748b',fontSize:13,fontWeight:600,cursor:'pointer'}},'\u2717 Ablehnen (Urspr\u00fcngliches Requirement bleibt)')
                       )
                     ),
